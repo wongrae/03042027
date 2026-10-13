@@ -66,3 +66,20 @@ assets:
 
 Re-running `gen_placeholders.py` regenerates them (requires `pip install
 pillow`) if you ever need more variants in the same style.
+
+## Porting notes (added during build)
+
+The `/_blob/<hash>` URLs in the boards pointed at Claude's artifact store, so the
+original files can't be compared against `placeholder-images/`. The five
+`photo-*.jpg` files are interchangeable gradient stand-ins, so they were assigned
+in order of first appearance in `Main.dc.html`'s marquee. The built pages in
+`site/` use the real files in `site/img/`:
+
+| Blob hash in the boards | File in `site/img/` | Used for |
+|---|---|---|
+| `39e001a9927b6e3ee8f9a4f6bd660064` | `hero-video-still.jpg` | Hero still (until the real video arrives) |
+| `544722f74df1a2c2dbcbc14c01db0f51` | `photo-clay.jpg` | Teaser / gallery photo |
+| `eed047a377b8fc3166006942a36a3942` | `photo-olive.jpg` | Teaser / gallery photo |
+| `cc78362dc4785920b36f2b185a01a9af` | `photo-sand.jpg` | Teaser / gallery photo |
+| `67a1934565788e73b02cda11a4c29173` | `photo-paper.jpg` | Teaser / gallery photo |
+| `5ca3eebc950f2c0a0ec4aa92c41cd5f0` | `photo-deep.jpg` | Teaser / gallery photo |

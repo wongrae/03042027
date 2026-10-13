@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rae &amp; Rayven</title>
+<meta name="description" content="Rae and Rayven are getting married on 3 April 2027. Lunch reception at Red House Seafood, Grand Copthorne.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=Jost:wght@400;500&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/base.css">
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ============ HERO (scroll-scrubbing video, full bleed; static still until the video is supplied) ============ -->
+  <div class="hero-shell" id="hero" style="position:relative; overflow:hidden;">
+    <img id="hero-still" src="./img/hero-video-still.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+    <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(20,15,10,.6), rgba(20,15,10,0) 58%);"></div>
+    <div class="hero-pad" style="position:relative; z-index:2; box-sizing:border-box; display:flex; flex-direction:column; justify-content:flex-end;">
+      <div class="eyebrow" style="color:rgba(255,255,255,.78);">We are getting married</div>
+      <div style="margin-top:16px;">
+        <span class="serif hero-name" style="font-weight:500; color:#FFFFFF; display:block; line-height:1;">Rae</span>
+        <span class="serif hero-and" style="font-style:italic; color:var(--clay); display:inline-block; margin:8px 0;">and</span>
+        <span class="serif hero-name" style="font-weight:500; color:#FFFFFF; display:block; line-height:1;">Rayven</span>
+      </div>
+      <p class="serif hero-tagline" style="font-style:italic; color:rgba(255,255,255,.88); margin:20px 0 0; line-height:1.5;">Would like to invite you to a lunch reception</p>
+      <div class="eyebrow" style="margin-top:26px; color:rgba(255,255,255,.78);">April 3, 2027</div>
+    </div>
+  </div>
+
+  <!-- ============ INFO (a single collage photo can replace the blush background once supplied) ============ -->
+  <div class="info-shell" style="width:100vw; margin-left:calc(50% - 50vw); box-sizing:border-box; background:var(--bg-blush); border-top:1px dashed var(--line); border-bottom:1px dashed var(--line); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+    <div class="info-text" style="margin:0 auto; position:relative; z-index:3; text-align:center;">
+      <div class="eyebrow">Date</div>
+      <p class="serif" style="font-size:26px; margin:10px 0 22px;">3 April 2027</p>
+      <div class="eyebrow">Time</div>
+      <p class="serif" style="font-size:26px; margin:10px 0 22px;">12 &ndash; 3pm</p>
+      <div class="eyebrow">Venue</div>
+      <p class="serif" style="font-size:26px; margin:10px 0 4px;">Red House Seafood, Grand Copthorne</p>
+      <a href="https://maps.app.goo.gl/b9ka4vdLvXxvpiTo8" target="_blank" rel="noopener" style="font-family:'Jost',sans-serif; font-size:13px; text-decoration:underline;">Get directions</a>
+    </div>
+  </div>
+
+  <!-- ============ GALLERY (wedding day only — mounted by main.js in Phase 3) ============ -->
+  <div id="gallery-slot"></div>
+
+  <!-- ============ FOOTER ============ -->
+  <div class="footer-pad" style="box-sizing:border-box; text-align:center;"></div>
+
+  <!-- ============ FLOATING ELEMENT (RSVP link in Phase 1, countdown in Phase 2, absent in Phase 3) ============ -->
+  <div id="pill-slot"></div>
+</div>
+
+<!-- Inert templates: nothing inside them is rendered or fetched until main.js clones it for the right phase. -->
+<template id="tpl-pill-rsvp">
+  <a href="./rsvp/" class="float-pill"><span>RSVP</span></a>
+</template>
+
+<template id="tpl-pill-countdown">
+  <div class="float-pill" role="timer" aria-label="Time until the wedding">
+    <span data-countdown>000 : 00 : 00</span>
+    <span class="sub">days &middot; hrs &middot; min</span>
+  </div>
+</template>
+
+<template id="tpl-gallery">
+  <section style="background:var(--bg-sage); padding:78px 0 86px; box-sizing:border-box;" aria-label="Gallery">
+    <div class="gallery-head" style="display:flex; justify-content:space-between; align-items:baseline; gap:14px; margin-bottom:24px; flex-wrap:wrap;">
+      <div class="eyebrow">Gallery</div>
+      <a href="./gallery/" style="font-family:'Jost',sans-serif; font-size:13px; text-decoration:underline;">View more</a>
+    </div>
+    <div class="marquee-wrap">
+      <div class="marquee-track">
+        <!-- main.js duplicates this set once (aria-hidden) so the loop is seamless -->
+        <a href="./gallery/"><img class="photo" src="./img/photo-clay.jpg" alt="Wedding photo" style="width:220px; height:280px;"></a>
+        <a href="./gallery/"><img class="photo" src="./img/photo-olive.jpg" alt="Wedding photo" style="width:160px; height:220px; margin-top:30px;"></a>
+        <a href="./gallery/"><img class="photo" src="./img/photo-sand.jpg" alt="Wedding photo" style="width:240px; height:300px;"></a>
+        <a href="./gallery/"><img class="photo" src="./img/photo-paper.jpg" alt="Wedding photo" style="width:180px; height:240px; margin-top:50px;"></a>
+        <a href="./gallery/"><img class="photo" src="./img/photo-deep.jpg" alt="Wedding photo" style="width:200px; height:260px; margin-top:16px;"></a>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
