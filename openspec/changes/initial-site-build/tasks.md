@@ -63,7 +63,7 @@ Tasks marked **(Rae)** need Rae's accounts or decisions. Claude Code prepares ev
 
 - [x] 9.1 On the deployed site with a test row: verify with the row's surname and last 4, RSVP as attending, reload and see the summary without re-verifying, edit to declining, then confirm in the Sheet that there is still one row with the updated values and `Updated at`
 - [x] 9.2 On a second browser: wrong digits show the generic not-found card with the contact note, and the Sheet is unchanged; then use "Not you?" on the first browser and confirm it returns to verification
-- [ ] 9.3 Clear the test row's `Code` in the Sheet; verify the first browser is sent back to verification on its next visit
+- [x] 9.3 Clear the test row's `Code` in the Sheet; verify the first browser is sent back to verification on its next visit
 - [x] 9.4 Walk Phases 1/2/3 locally via `?now=` on desktop (1280px) and mobile (375px, ≤680px/≤480px breakpoints): pill behaviour, countdown, teaser presence, gallery gating, RSVP closed notice
 - [x] 9.5 Confirm that no guest data is in the served files or API responses: search the deployed `site/` output and repo for test-row names, phones and codes (expecting no matches), and check in DevTools that no API response contains a phone number
 
