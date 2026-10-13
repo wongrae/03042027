@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Full Gallery</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F1E6;
+    --bg-blush:#EDE1D3;
+    --bg-sage:#E7E6D9;
+    --ink:#332A22;
+    --ink-muted:#8F8275;
+    --clay:#A9695A;
+    --line:#DCCFC0;
+  }
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:"Jost", system-ui, sans-serif;}
+  a{color:var(--clay);}
+  a:hover{color:#7F4A3E;}
+  .eyebrow{font-family:"Jost",sans-serif; font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-muted); font-weight:500;}
+  .serif{font-family:"Cormorant Garamond", serif;}
+  .photo{
+    width:100%; display:block; object-fit:cover;
+    border:1px solid var(--line);
+    box-shadow:0 2px 10px rgba(40,30,20,.1);
+    box-sizing:border-box;
+  }
+  .flow{column-count:3; column-gap:16px;}
+  .flow > *{margin-bottom:16px; break-inside:avoid;}
+  @media (max-width:860px){ .flow{column-count:2;} }
+  @media (max-width:520px){ .flow{column-count:1;} }
+</style>
+</helmet>
+
+<div style="width:100%; max-width:1280px; margin:0 auto; padding:64px; box-sizing:border-box;">
+  <a href="Main.dc.html" class="eyebrow" style="text-decoration:none; display:inline-block; margin-bottom:36px;">&larr; Back</a>
+  <h1 class="serif" style="font-size:42px; font-weight:500; margin:0 0 6px; color:var(--ink);">The Full Album</h1>
+  <p class="eyebrow" style="margin:0 0 42px; font-style:normal;">Rae &amp; Rayven &middot; 3 April 2027</p>
+
+  <div class="flow">
+    <a href="#"><img class="photo" src="/_blob/544722f74df1a2c2dbcbc14c01db0f51" alt="" style="height:300px;"></a>
+    <a href="#"><img class="photo" src="/_blob/cc78362dc4785920b36f2b185a01a9af" alt="" style="height:200px;"></a>
+    <a href="#"><img class="photo" src="/_blob/67a1934565788e73b02cda11a4c29173" alt="" style="height:260px;"></a>
+    <a href="#"><img class="photo" src="/_blob/eed047a377b8fc3166006942a36a3942" alt="" style="height:340px;"></a>
+    <a href="#"><img class="photo" src="/_blob/5ca3eebc950f2c0a0ec4aa92c41cd5f0" alt="" style="height:220px;"></a>
+    <a href="#"><img class="photo" src="/_blob/544722f74df1a2c2dbcbc14c01db0f51" alt="" style="height:280px;"></a>
+    <a href="#"><img class="photo" src="/_blob/67a1934565788e73b02cda11a4c29173" alt="" style="height:190px;"></a>
+    <a href="#"><img class="photo" src="/_blob/cc78362dc4785920b36f2b185a01a9af" alt="" style="height:310px;"></a>
+    <a href="#"><img class="photo" src="/_blob/5ca3eebc950f2c0a0ec4aa92c41cd5f0" alt="" style="height:240px;"></a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

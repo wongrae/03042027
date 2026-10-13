@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rae &amp; Rayven</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=Jost:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F1E6;
+    --bg-blush:#EDE1D3;
+    --bg-sage:#E7E6D9;
+    --ink:#332A22;
+    --ink-muted:#8F8275;
+    --clay:#A9695A;
+    --line:#DCCFC0;
+  }
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:"Jost", system-ui, sans-serif;}
+  a{color:var(--clay);}
+  a:hover{color:#7F4A3E;}
+  .eyebrow{font-family:"Jost",sans-serif; font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-muted); font-weight:500;}
+  .serif{font-family:"Cormorant Garamond", serif;}
+  .photo{
+    border:1px solid var(--line);
+    box-shadow:0 4px 14px rgba(40,30,20,.16);
+    box-sizing:border-box;
+    display:block;
+    object-fit:cover;
+  }
+  .float-pill{
+    position:fixed; right:26px; bottom:26px;
+    background:var(--bg); border-width:1px; border-style:solid;
+    border-radius:24px; padding:12px 22px;
+    font-family:'Jost',sans-serif; font-size:13.5px; letter-spacing:.02em;
+    text-align:center; text-decoration:none; display:block;
+    box-shadow:0 4px 12px rgba(40,30,20,.12);
+  }
+  .marquee-wrap{overflow:hidden; mask-image:linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);}
+  .marquee-track{display:flex; gap:14px; width:max-content; animation:marquee 26s linear infinite;}
+  .marquee-wrap:hover .marquee-track{animation-play-state:paused;}
+  @keyframes marquee{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .marquee-track{animation:none;}
+  }
+
+  /* ---- responsive sizing (desktop defaults below, phone overrides further down) ---- */
+  .hero-shell{min-height:560px;}
+  .hero-pad{padding:64px; min-height:560px;}
+  .hero-name{font-size:72px;}
+  .hero-and{font-size:28px;}
+  .hero-tagline{font-size:18px; max-width:360px;}
+  .info-shell{padding:90px 0; min-height:560px;}
+  .info-text{max-width:380px; padding:0 24px; box-sizing:border-box;}
+  .gallery-head{padding:0 64px;}
+  .footer-pad{padding:48px 64px;}
+
+  @media (max-width:680px){
+    .hero-shell{min-height:420px;}
+    .hero-pad{padding:32px 24px; min-height:420px;}
+    .hero-name{font-size:40px;}
+    .hero-and{font-size:18px; margin:4px 0 !important;}
+    .hero-tagline{font-size:14.5px; max-width:260px;}
+    .info-shell{padding:56px 0; min-height:420px;}
+    .gallery-head{padding:0 24px;}
+    .footer-pad{padding:32px 24px;}
+    .float-pill{right:16px; bottom:16px; padding:10px 18px; font-size:12px;}
+  }
+</style>
+</helmet>
+
+<div style="width:100%; max-width:1280px; margin:0 auto; overflow-x:hidden; position:relative;">
+
+  <!-- ============ HERO (scroll-scrubbing video, full bleed) ============ -->
+  <div class="hero-shell" style="position:relative; overflow:hidden;">
+    <img src="/_blob/39e001a9927b6e3ee8f9a4f6bd660064" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
+    <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(20,15,10,.6), rgba(20,15,10,0) 58%);"></div>
+    <div style="position:absolute; top:28px; left:50%; transform:translateX(-50%); text-align:center; color:rgba(255,255,255,.68); font-family:'Jost',sans-serif; font-size:11px; letter-spacing:.12em; text-transform:uppercase; white-space:nowrap;">video &middot; scroll-scrubbing animation</div>
+    <div class="hero-pad" style="position:relative; z-index:2; box-sizing:border-box; display:flex; flex-direction:column; justify-content:flex-end;">
+      <div class="eyebrow" style="color:rgba(255,255,255,.78);">We are getting married</div>
+      <div style="margin-top:16px;">
+        <span class="serif hero-name" style="font-weight:500; color:#FFFFFF; display:block; line-height:1;">Rae</span>
+        <span class="serif hero-and" style="font-style:italic; color:{{accent}}; display:inline-block; margin:8px 0;">and</span>
+        <span class="serif hero-name" style="font-weight:500; color:#FFFFFF; display:block; line-height:1;">Rayven</span>
+      </div>
+      <p class="serif hero-tagline" style="font-style:italic; color:rgba(255,255,255,.88); margin:20px 0 0; line-height:1.5;">Would like to invite you to a lunch reception</p>
+      <div class="eyebrow" style="margin-top:26px; color:rgba(255,255,255,.78);">April 3, 2027</div>
+    </div>
+  </div>
+
+  <!-- ============ INFO (single uploaded photo collage as section background — not yet uploaded) ============ -->
+  <div class="info-shell" style="width:100vw; margin-left:calc(50% - 50vw); box-sizing:border-box; background:var(--bg-blush); border-top:1px dashed var(--line); border-bottom:1px dashed var(--line); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+    <div class="eyebrow" style="position:absolute; top:28px; left:50%; transform:translateX(-50%); white-space:nowrap;">photo &middot; single collage background, to be uploaded</div>
+
+    <div class="info-text" style="margin:0 auto; position:relative; z-index:3; text-align:center;">
+      <div class="eyebrow">Date</div>
+      <p class="serif" style="font-size:26px; margin:10px 0 22px;">3 April 2027</p>
+      <div class="eyebrow">Time</div>
+      <p class="serif" style="font-size:26px; margin:10px 0 22px;">12 &ndash; 3pm</p>
+      <div class="eyebrow">Venue</div>
+      <p class="serif" style="font-size:26px; margin:10px 0 4px;">Red House Seafood, Grand Copthorne</p>
+      <a href="https://maps.app.goo.gl/b9ka4vdLvXxvpiTo8" target="_blank" rel="noopener" style="font-family:'Jost',sans-serif; font-size:13px; text-decoration:underline;">Get directions</a>
+    </div>
+  </div>
+
+  <!-- ============ GALLERY (wedding day only — auto-cycling filmstrip) ============ -->
+  <sc-if value="{{showGallery}}">
+    <div style="background:var(--bg-sage); padding:78px 0 86px; box-sizing:border-box;">
+      <div class="gallery-head" style="display:flex; justify-content:space-between; align-items:baseline; gap:14px; margin-bottom:24px; flex-wrap:wrap;">
+        <div class="eyebrow">Gallery</div>
+        <a href="Gallery.dc.html" style="font-family:'Jost',sans-serif; font-size:13px; text-decoration:underline; color:{{accent}};">View more</a>
+      </div>
+      <div class="marquee-wrap">
+        <div class="marquee-track">
+          <a href="Gallery.dc.html"><img class="photo" src="/_blob/544722f74df1a2c2dbcbc14c01db0f51" alt="" style="width:220px; height:280px;"></a>
+          <a href="Gallery.dc.html"><img class="photo" src="/_blob/eed047a377b8fc3166006942a36a3942" alt="" style="width:160px; height:220px; margin-top:30px;"></a>
+          <a href="Gallery.dc.html"><img class="photo" src="/_blob/cc78362dc4785920b36f2b185a01a9af" alt="" style="width:240px; height:300px;"></a>
+          <a href="Gallery.dc.html"><img class="photo" src="/_blob/67a1934565788e73b02cda11a4c29173" alt="" style="width:180px; height:240px; margin-top:50px;"></a>
+          <a href="Gallery.dc.html"><img class="photo" src="/_blob/5ca3eebc950f2c0a0ec4aa92c41cd5f0" alt="" style="width:200px; height:260px; margin-top:16px;"></a>
+          <a href="Gallery.dc.html"><img class="photo" src="/_blob/544722f74df1a2c2dbcbc14c01db0f51" alt="" style="width:220px; height:280px;"></a>
+          <a href="Gallery.dc.html"><img class="photo" src="/_blob/eed047a377b8fc3166006942a36a3942" alt="" style="width:160px; height:220px; margin-top:30px;"></a>
+          <a href="Gallery.dc.html"><img class="photo" src="/_blob/cc78362dc4785920b36f2b185a01a9af" alt="" style="width:240px; height:300px;"></a>
+          <a href="Gallery.dc.html"><img class="photo" src="/_blob/67a1934565788e73b02cda11a4c29173" alt="" style="width:180px; height:240px; margin-top:50px;"></a>
+          <a href="Gallery.dc.html"><img class="photo" src="/_blob/5ca3eebc950f2c0a0ec4aa92c41cd5f0" alt="" style="width:200px; height:260px; margin-top:16px;"></a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ FOOTER ============ -->
+  <div class="footer-pad" style="box-sizing:border-box; text-align:center;">
+
+  </div>
+
+  <!-- ============ FLOATING ELEMENT (hidden on the wedding day) ============ -->
+  <sc-if value="{{isClickable}}">
+    <a href="RSVP.dc.html" class="float-pill" style="color:{{accent}}; border-color:{{accent}}; cursor:pointer;">
+      <span>{{floatingLabel}}</span>
+      <sc-if value="{{showFloatingSub}}">
+        <span style="display:block; font-size:10px; opacity:.75; margin-top:2px;">{{floatingSub}}</span>
+      </sc-if>
+    </a>
+  </sc-if>
+  <sc-if value="{{isStatic}}">
+    <div class="float-pill" style="color:{{accent}}; border-color:{{accent}}; cursor:default;">
+      <span>{{floatingLabel}}</span>
+      <sc-if value="{{showFloatingSub}}">
+        <span style="display:block; font-size:10px; opacity:.75; margin-top:2px;">{{floatingSub}}</span>
+      </sc-if>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;phase&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;1&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;2&quot;,&quot;3&quot;],&quot;section&quot;:&quot;Phase&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#A9695A&quot;,&quot;options&quot;:[&quot;#A9695A&quot;,&quot;#8C8560&quot;,&quot;#7F4A3E&quot;,&quot;#C2967E&quot;],&quot;section&quot;:&quot;Phase&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const phase = this.props.phase ?? '1';
+    const accent = this.props.accent ?? '#A9695A';
+    let floatingLabel, floatingSub;
+    if (phase === '2') {
+      floatingLabel = '123 : 04 : 20';
+      floatingSub = 'days · hrs · min';
+    } else {
+      floatingLabel = 'RSVP';
+      floatingSub = '';
+    }
+    return {
+      accent,
+      floatingLabel,
+      floatingSub,
+      showFloatingSub: floatingSub !== '',
+      isClickable: phase === '1',
+      isStatic: phase === '2',
+      showGallery: phase === '3',
+    };
+  }
+}
+</script>
+</body>
+</html>

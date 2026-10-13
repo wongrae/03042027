@@ -1,0 +1,11 @@
+{
+  "name": "rae-rayven-wedding",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Rae & Rayven's wedding site (3 April 2027)",
+  "scripts": {
+    "test": "node --test tests/",
+    "serve": "node scripts/serve.mjs"
+  }
+}

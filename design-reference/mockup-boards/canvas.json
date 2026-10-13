@@ -1,0 +1,81 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Gallery.dc.html": {
+      "expand": "fill",
+      "h": 1400,
+      "is_interactive": true,
+      "w": 1280,
+      "x": 1400,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 1288,
+      "is_interactive": true,
+      "w": 1280,
+      "x": 0,
+      "y": 21
+    },
+    "Option-A-Soft-Romantic.dc.html": {
+      "h": 580,
+      "w": 380,
+      "x": 0,
+      "y": 3000
+    },
+    "Option-B-Kraft-Journal.dc.html": {
+      "h": 580,
+      "w": 380,
+      "x": 460,
+      "y": 3000
+    },
+    "Option-C-Clean-Minimal.dc.html": {
+      "h": 580,
+      "w": 380,
+      "x": 920,
+      "y": 3000
+    },
+    "Option-D-Bold-Editorial.dc.html": {
+      "h": 580,
+      "w": 380,
+      "x": 1380,
+      "y": 3000
+    },
+    "RSVP.dc.html": {
+      "expand": "fill",
+      "h": 1500,
+      "is_interactive": true,
+      "w": 900,
+      "x": 2800,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-09T15:07:11Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "note-archive-options": {
+      "text": "Archived — early direction exploration, superseded by the final mix (A's layout + C's type). Kept for reference, not part of the active site.",
+      "w": 320,
+      "x": 0,
+      "y": 2880
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Gallery.dc.html",
+    "RSVP.dc.html",
+    "Option-A-Soft-Romantic.dc.html",
+    "Option-B-Kraft-Journal.dc.html",
+    "Option-C-Clean-Minimal.dc.html",
+    "Option-D-Bold-Editorial.dc.html"
+  ],
+  "pages": [],
+  "title": "Rae & Rayven Wedding Site"
+}

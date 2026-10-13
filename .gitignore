@@ -1,0 +1,5 @@
+node_modules/
+# guest-list exports must never be committed
+*.csv
+*.xlsx
+.DS_Store
