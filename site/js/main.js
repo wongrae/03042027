@@ -6,6 +6,7 @@ import { getPhase, countdownParts, formatCountdown } from './phase.js';
 import { syncClock } from './clock.js';
 import { pageNowMs } from './page-now.js';
 import { setupMarquee } from './marquee.js';
+import { initHero } from './hero.js';
 
 const pillSlot = document.getElementById('pill-slot');
 const gallerySlot = document.getElementById('gallery-slot');
@@ -50,6 +51,9 @@ function tick() {
   const msToNextMinute = 60000 - (clock.now() % 60000);
   setTimeout(tick, msToNextMinute + 50);
 }
+
+// Hero scroll-scrub (no-op until config.heroVideo is set, or for reduced-motion visitors).
+initHero({ src: config.heroVideo });
 
 (async () => {
   clock = await syncClock({ timeoutMs: 2000 });

@@ -46,17 +46,17 @@ Tasks marked **(Rae)** need Rae's accounts or decisions. Claude Code prepares ev
 
 ## 6. Full gallery placeholder (`gallery`)
 
-- [ ] 6.1 Port the Gallery board into `site/gallery/index.html` with its photos inside a `<template>`, keeping its 860px/520px column rules, and `gallery.js` redirecting to `../` before Phase 3 (phase from `serverNow()`); verify that in Phase 1/2 (`?now=`) the page redirects home with no image requests, and in Phase 3 the placeholder masonry renders
+- [x] 6.1 Port the Gallery board into `site/gallery/index.html` with its photos inside a `<template>`, keeping its 860px/520px column rules, and `gallery.js` redirecting to `../` before Phase 3 (phase from `serverNow()`); verify that in Phase 1/2 (`?now=`) the page redirects home with no image requests, and in Phase 3 the placeholder masonry renders
 
 ## 7. Hero scroll-scrubbing (`hero-animation`)
 
-- [ ] 7.1 Implement `site/js/hero.js` per design Decision 7: active only when `config.heroVideo` is set and reduced motion is off; tall section with a sticky media layer; rAF scroll-progress → `currentTime`; otherwise leave the still layout untouched; verify with a temporary all-keyframe test clip (generated with ffmpeg from the still image or any short clip) that scrolling down and up scrubs both ways and holds when scrolling stops, then remove the test clip
+- [x] 7.1 Implement `site/js/hero.js` per design Decision 7: active only when `config.heroVideo` is set and reduced motion is off; tall section with a sticky media layer; rAF scroll-progress → `currentTime`; otherwise leave the still layout untouched; verify with a temporary all-keyframe test clip (generated with ffmpeg from the still image or any short clip) that scrolling down and up scrubs both ways and holds when scrolling stops, then remove the test clip
 - [ ] 7.2 Document in `README.md` how to add Rae's asset (the ffmpeg all-keyframe command, the file location, setting `heroVideo`) and the canvas image-sequence fallback; verify the ffmpeg command runs as written on the test clip
 - [ ] 7.3 **(Rae, when ready)** Supply the hero video; encode it, set `heroVideo`, test scrubbing on iOS Safari and Android Chrome; if iOS seeking is jerky, switch to the canvas image-sequence path; verify smooth scrubbing on both
 
 ## 8. Deploy
 
-- [ ] 8.1 Add `.github/workflows/pages.yml` (on push to `main`: checkout → `npm ci` → `npm test` → upload `site/` → deploy-pages), leaving the existing `copilot-setup-steps.yml` untouched; verify the workflow file passes `actionlint` if available, or review it against GitHub's Pages starter workflow
+- [x] 8.1 Add `.github/workflows/pages.yml` (on push to `main`: checkout → `npm ci` → `npm test` → upload `site/` → deploy-pages), leaving the existing `copilot-setup-steps.yml` untouched; verify the workflow file passes `actionlint` if available, or review it against GitHub's Pages starter workflow
 - [ ] 8.2 **(Rae)** Enable Pages with "Source: GitHub Actions" in repo settings and push; verify the Actions run is green and the site loads at the Pages URL, including `rsvp/` and `gallery/` subpaths
 
 ## 9. End-to-end QA (integration)

@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Rae & Rayven's wedding site (3 April 2027)",
   "scripts": {
-    "test": "node --test tests/",
+    "test": "node --test",
     "serve": "node scripts/serve.mjs",
     "mock": "node scripts/mock-backend.mjs"
   }
