@@ -8,11 +8,11 @@ export const config = {
   // PLACEHOLDER — set before launch. RSVPs close at this instant (Phase 2 begins).
   // Must match the RSVP_DEADLINE script property in the Google Apps Script
   // (see backend/README.md) — the backend enforces it independently.
-  rsvpDeadline: '2027-03-01T23:59:59+08:00',
+  rsvpDeadline: '2027-01-30T23:59:59+08:00',
 
   // Google Apps Script web app URL (the "/exec" address). Filled in once the
   // backend is deployed (task 4.7).
-  apiUrl: '',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbz6pbqn2zkO7po8BTij4MKpIgE4R93UMHapd2_AqbWXinW_sRWsB67VLOZZC3j1kr4y/exec',
 
   // Path to the hero scroll-scrub video, e.g. './img/hero.mp4'. Leave null to
   // keep the static still image until the real asset is supplied.

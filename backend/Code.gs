@@ -270,11 +270,17 @@ function newCode_(rows) {
     if (r.code) used[r.code] = true;
   });
   for (var attempt = 0; attempt < 20; attempt++) {
-    var n = BigInt('0x' + Utilities.getUuid().replace(/-/g, ''));
+    // Base-62 digits of the UUID's 128 bits, by repeated division of its hex digits (no BigInt).
+    var digits = Utilities.getUuid().replace(/-/g, '').split('').map(function (c) { return parseInt(c, 16); });
     var out = '';
     for (var i = 0; i < CODE_LENGTH; i++) {
-      out += BASE62.charAt(Number(n % 62n));
-      n = n / 62n;
+      var rem = 0;
+      for (var j = 0; j < digits.length; j++) {
+        var cur = rem * 16 + digits[j];
+        digits[j] = Math.floor(cur / 62);
+        rem = cur % 62;
+      }
+      out += BASE62.charAt(rem);
     }
     if (!used[out]) return out;
   }
