@@ -2,8 +2,9 @@
 // gallery teaser. Nothing for another phase is ever put in the DOM (so in
 // Phases 1/2 the gallery photos aren't even requested).
 import { config } from './config.js';
-import { getPhase, countdownParts, formatCountdown, resolveNow } from './phase.js';
+import { getPhase, countdownParts, formatCountdown } from './phase.js';
 import { syncClock } from './clock.js';
+import { pageNowMs } from './page-now.js';
 import { setupMarquee } from './marquee.js';
 
 const pillSlot = document.getElementById('pill-slot');
@@ -15,7 +16,7 @@ let clock = { now: Date.now };
 let mountedPhase = null;
 let countdownEl = null;
 
-const nowMs = () => resolveNow(window.location, clock.now());
+const nowMs = () => pageNowMs(clock);
 
 function mount(phase) {
   pillSlot.replaceChildren();

@@ -87,3 +87,48 @@ test('missing or invalid ?now= falls back to the given clock', () => {
   assert.equal(resolveNow(loc('localhost', '?now=banana'), 42), 42);
   assert.equal(resolveNow(loc('localhost', '?other=1'), 42), 42);
 });
+
+const memStore = () => {
+  const m = new Map();
+  return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, v), removeItem: (k) => m.delete(k) };
+};
+
+test('a ?now= preview is remembered for the session on localhost so it carries to other pages', () => {
+  const s = memStore();
+  assert.equal(resolveNow(loc('localhost', '?now=2027-04-03'), 1, s), at('2027-04-03T00:00:00+08:00'));
+  // a later page with no query string still previews the same date
+  assert.equal(resolveNow(loc('localhost', ''), 1, s), at('2027-04-03T00:00:00+08:00'));
+  // a new ?now= replaces it
+  assert.equal(resolveNow(loc('localhost', '?now=2027-03-20'), 1, s), at('2027-03-20T00:00:00+08:00'));
+  assert.equal(resolveNow(loc('localhost', ''), 1, s), at('2027-03-20T00:00:00+08:00'));
+});
+
+test('?now= with no value clears the remembered preview', () => {
+  const s = memStore();
+  resolveNow(loc('localhost', '?now=2027-04-03'), 1, s);
+  assert.equal(resolveNow(loc('localhost', '?now='), 99, s), 99);
+  assert.equal(resolveNow(loc('localhost', ''), 99, s), 99);
+});
+
+test('an invalid ?now= keeps the previous preview and does not store garbage', () => {
+  const s = memStore();
+  resolveNow(loc('localhost', '?now=2027-04-03'), 1, s);
+  assert.equal(resolveNow(loc('localhost', '?now=banana'), 99, s), 99);
+  assert.equal(resolveNow(loc('localhost', ''), 99, s), at('2027-04-03T00:00:00+08:00'));
+});
+
+test('nothing is stored or read on non-local hosts', () => {
+  const s = memStore();
+  s.setItem('rr.now', '2027-04-03');
+  assert.equal(resolveNow(loc('example.com', '?now=2027-04-03'), 42, s), 42);
+  assert.equal(resolveNow(loc('example.com', ''), 42, s), 42);
+  const s2 = memStore();
+  resolveNow(loc('example.com', '?now=2027-04-03'), 42, s2);
+  assert.equal(s2.getItem('rr.now'), null);
+});
+
+test('blocked storage still supports the query-string preview', () => {
+  const blocked = { getItem() { throw new Error('x'); }, setItem() { throw new Error('x'); }, removeItem() { throw new Error('x'); } };
+  assert.equal(resolveNow(loc('localhost', '?now=2027-04-03'), 1, blocked), 1); // falls back safely
+  assert.equal(resolveNow(loc('localhost', ''), 1, blocked), 1);
+});

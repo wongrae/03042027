@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RSVP &middot; Rae &amp; Rayven</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=Jost:wght@400;500&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/base.css">
+</head>
+<body>
+
+<main class="rsvp-shell" style="width:100%; max-width:560px; margin:0 auto; box-sizing:border-box;">
+  <a href="../" class="eyebrow" style="text-decoration:none; display:inline-block; margin-bottom:48px;">&larr; Back</a>
+  <div style="margin-bottom:44px;">
+    <h1 class="serif rsvp-title" style="font-weight:500; margin:0 0 6px;">RSVP</h1>
+    <p class="eyebrow" style="font-style:normal; margin:0;">Rae &amp; Rayven &middot; 3 April 2027</p>
+  </div>
+
+  <!-- ============ STATE: LOADING ============ -->
+  <section id="state-loading" aria-live="polite">
+    <p class="note">One moment&hellip;</p>
+  </section>
+
+  <!-- ============ STATE: VERIFY (surname + last 4 digits of phone) ============ -->
+  <section id="state-verify" hidden>
+    <p class="serif" style="font-size:19px; font-style:italic; color:var(--ink); margin:0 0 28px; line-height:1.5;">Let's find your invitation &mdash; enter your surname and the last 4 digits of your phone number.</p>
+    <form id="verify-form" novalidate>
+      <label class="field-label" for="surname">Surname</label>
+      <input class="field" id="surname" name="surname" type="text" placeholder="e.g. Tan" autocomplete="family-name" autocapitalize="words" spellcheck="false" aria-describedby="surname-error" style="margin-bottom:6px;">
+      <p class="field-error" id="surname-error" hidden></p>
+
+      <label class="field-label" for="last4" style="margin-top:22px;">Last 4 digits of your phone number</label>
+      <input class="field" id="last4" name="last4" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="e.g. 4567" autocomplete="off" aria-describedby="last4-error" style="margin-bottom:6px; max-width:160px;">
+      <p class="field-error" id="last4-error" hidden></p>
+
+      <p class="field-error" id="verify-error" role="alert" hidden style="margin:18px 0 0;"></p>
+      <button class="btn-primary" id="verify-submit" type="submit" style="margin-top:28px;">Continue</button>
+    </form>
+    <p class="eyebrow" style="font-style:normal; margin-top:20px; font-size:10.5px; letter-spacing:.08em;">we check this against our guest list &mdash; no account needed</p>
+    <p class="note help-note" style="margin:14px 0 0;">Unable to verify? Please reach out to Rae or Rayven.</p>
+  </section>
+
+  <!-- ============ STATE: NO MATCH (blocked, nothing created) ============ -->
+  <section id="state-notfound" hidden>
+    <div class="card" style="padding:32px 28px; margin-bottom:24px;">
+      <p class="serif" tabindex="-1" data-focus style="font-size:24px; margin:0 0 10px;">We couldn't find your invitation</p>
+      <p style="font-size:14.5px; color:var(--ink-muted); line-height:1.6; margin:0 0 12px;">Please double-check your surname and the last 4 digits of your phone number, then try again.</p>
+      <p class="help-note" style="font-size:14.5px; color:var(--ink-muted); line-height:1.6; margin:0;">Still unable to verify? Please reach out to Rae or Rayven.</p>
+    </div>
+    <button class="btn-outline" id="try-again" type="button">Try again</button>
+  </section>
+
+  <!-- ============ STATE: COULDN'T REACH THE SERVER ============ -->
+  <section id="state-error" hidden>
+    <div class="card" style="padding:32px 28px; margin-bottom:24px;">
+      <p class="serif" tabindex="-1" data-focus style="font-size:24px; margin:0 0 10px;">We couldn't reach the guest list</p>
+      <p style="font-size:14.5px; color:var(--ink-muted); line-height:1.6; margin:0;">Please check your connection and try again. If it keeps happening, reach out to Rae or Rayven.</p>
+    </div>
+    <button class="btn-outline" id="retry-load" type="button">Try again</button>
+  </section>
+
+  <!-- ============ STATE: MATCHED, RSVP FORM ============ -->
+  <section id="state-form" hidden>
+    <p class="serif" tabindex="-1" data-focus style="font-size:24px; margin:0 0 4px;">Hi, <span data-guest-name></span></p>
+    <p style="font-size:14px; color:var(--ink-muted); margin:0 0 4px; line-height:1.6;" data-form-intro>We're so glad you're on the list. Let us know if you'll be joining us.</p>
+    <p class="note" style="margin:0 0 36px;"><button class="link-button" type="button" data-not-you>Not you?</button></p>
+
+    <form id="rsvp-form" novalidate>
+      <fieldset style="border:0; padding:0; margin:0 0 30px;">
+        <legend class="field-label" style="padding:0;">Will you be attending?</legend>
+        <div role="radiogroup" aria-label="Will you be attending?" style="display:flex; gap:10px;" id="attending-group">
+          <button type="button" class="pill-choice" role="radio" aria-checked="false" data-value="yes" style="flex:1;">Joyfully attending</button>
+          <button type="button" class="pill-choice" role="radio" aria-checked="false" data-value="no" style="flex:1;">Regretfully declining</button>
+        </div>
+        <p class="field-error" id="attending-error" hidden></p>
+      </fieldset>
+
+      <div id="attending-only" hidden>
+        <div style="margin-bottom:28px;">
+          <span class="field-label" id="party-label">Number in your party</span>
+          <div class="stepper" role="group" aria-labelledby="party-label">
+            <button type="button" id="party-minus" aria-label="One fewer guest">&minus;</button>
+            <output id="party-value" aria-live="polite">1</output>
+            <button type="button" id="party-plus" aria-label="One more guest">+</button>
+          </div>
+          <p class="note" id="party-hint" style="margin:6px 0 0;" hidden></p>
+          <p class="field-error" id="partySize-error" hidden></p>
+        </div>
+
+        <div style="margin-bottom:28px;">
+          <label class="field-label" for="dietary">Dietary restrictions / meal preference</label>
+          <input class="field" id="dietary" type="text" maxlength="300" placeholder="e.g. vegetarian, no pork, nut allergy">
+          <p class="field-error" id="dietary-error" hidden></p>
+        </div>
+
+        <fieldset style="border:0; padding:0; margin:0 0 28px;">
+          <legend class="field-label" style="padding:0;">Will you need parking?</legend>
+          <div role="radiogroup" aria-label="Will you need parking?" style="display:flex; gap:10px; max-width:220px;" id="parking-group">
+            <button type="button" class="pill-choice" role="radio" aria-checked="false" data-value="yes" style="flex:1;">Yes</button>
+            <button type="button" class="pill-choice" role="radio" aria-checked="false" data-value="no" style="flex:1;">No</button>
+          </div>
+          <p class="field-error" id="parking-error" hidden></p>
+        </fieldset>
+      </div>
+
+      <div style="margin-bottom:6px;">
+        <label class="field-label" for="wishes">Well wishes <span style="opacity:.6;">(optional)</span></label>
+        <textarea class="field" id="wishes" maxlength="1000" placeholder="Leave a note for Rae &amp; Rayven"></textarea>
+        <p class="field-error" id="wishes-error" hidden></p>
+      </div>
+
+      <p class="field-error" id="form-error" role="alert" hidden style="margin:18px 0 0;"></p>
+      <button class="btn-primary" id="form-submit" type="submit" style="margin-top:34px;">Send RSVP</button>
+      <p style="text-align:center; margin:14px 0 0;" id="cancel-edit-wrap" hidden><button class="link-button note" type="button" id="cancel-edit">Cancel</button></p>
+      <p class="eyebrow" style="font-style:normal; margin-top:18px; font-size:10.5px; letter-spacing:.08em; text-align:center;">you can come back and update this anytime before the rsvp deadline</p>
+    </form>
+  </section>
+
+  <!-- ============ STATE: SUBMITTED / EDIT IN PLACE ============ -->
+  <section id="state-submitted" hidden>
+    <p class="serif" tabindex="-1" data-focus style="font-size:26px; margin:0 0 6px;">Thank you, <span data-guest-name></span></p>
+    <p style="font-size:14px; color:var(--ink-muted); margin:0 0 30px; line-height:1.6;" id="submitted-message"></p>
+    <div class="card" style="padding:28px; margin-bottom:28px;" id="summary"></div>
+    <button class="btn-outline" id="edit-rsvp" type="button">Edit my RSVP</button>
+    <p class="note" style="margin:22px 0 0;"><a href="../">Back to the website</a> &middot; <button class="link-button" type="button" data-not-you>Not you?</button></p>
+  </section>
+
+  <!-- ============ STATE: RSVP CLOSED (outside Phase 1) ============ -->
+  <section id="state-closed" hidden>
+    <div class="card" style="padding:32px 28px; margin-bottom:24px;">
+      <p class="serif" tabindex="-1" data-focus style="font-size:24px; margin:0 0 10px;">RSVPs have closed</p>
+      <p style="font-size:14.5px; color:var(--ink-muted); line-height:1.6; margin:0;">We're no longer taking responses online. If you need to get in touch, please reach out to Rae or Rayven directly.</p>
+    </div>
+    <a class="btn-outline" href="../">Back to the website</a>
+  </section>
+</main>
+
+<script type="module" src="../js/rsvp.js"></script>
+</body>
+</html>

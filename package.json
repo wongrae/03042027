@@ -6,6 +6,7 @@
   "description": "Rae & Rayven's wedding site (3 April 2027)",
   "scripts": {
     "test": "node --test tests/",
-    "serve": "node scripts/serve.mjs"
+    "serve": "node scripts/serve.mjs",
+    "mock": "node scripts/mock-backend.mjs"
   }
 }

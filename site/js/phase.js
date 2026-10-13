@@ -38,20 +38,43 @@ export function formatCountdown(parts) {
 }
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1']);
+const PREVIEW_KEY = 'rr.now';
 
-/**
- * The instant the page should treat as "now". On localhost/127.0.0.1 only, a
- * `?now=` query parameter overrides it (for previewing phases); anywhere else
- * the override is ignored. A date or datetime without an offset is read as
- * Singapore time. Falls back to `fallbackMs` when there is no valid override.
- */
-export function resolveNow(location, fallbackMs) {
-  if (!LOCAL_HOSTS.has(location.hostname)) return fallbackMs;
-  const raw = new URLSearchParams(location.search).get('now');
-  if (!raw) return fallbackMs;
-  let iso = raw.trim();
+function parsePreview(raw) {
+  let iso = String(raw ?? '').trim();
+  if (!iso) return null;
   if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) iso += 'T00:00:00+08:00';
   else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(iso)) iso += '+08:00';
   const ms = Date.parse(iso);
-  return Number.isNaN(ms) ? fallbackMs : ms;
+  return Number.isNaN(ms) ? null : ms;
+}
+
+/**
+ * The instant the page should treat as "now". On localhost/127.0.0.1 only, a
+ * `?now=` query parameter overrides it (for previewing phases) and is
+ * remembered in `storage` (e.g. sessionStorage) so it carries across pages;
+ * `?now=` with no value clears it. Anywhere else the override is ignored. A
+ * date or datetime without an offset is read as Singapore time. Falls back to
+ * `fallbackMs` when there is no valid override.
+ */
+export function resolveNow(location, fallbackMs, storage) {
+  if (!LOCAL_HOSTS.has(location.hostname)) return fallbackMs;
+  const params = new URLSearchParams(location.search);
+  try {
+    if (params.has('now')) {
+      const raw = params.get('now');
+      const ms = parsePreview(raw);
+      if (ms === null) {
+        if (!String(raw).trim()) storage?.removeItem(PREVIEW_KEY);
+        return fallbackMs;
+      }
+      storage?.setItem(PREVIEW_KEY, String(raw).trim());
+      return ms;
+    }
+    const stored = parsePreview(storage?.getItem(PREVIEW_KEY));
+    if (stored !== null) return stored;
+  } catch {
+    // storage blocked: query-string-only preview
+  }
+  return fallbackMs;
 }
