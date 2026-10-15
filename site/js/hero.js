@@ -7,6 +7,21 @@
 // For smooth *reverse* scrubbing the video should be encoded with every frame
 // a keyframe (see README: ffmpeg … -g 1).
 
+// How much scrolling each second of video gets (in viewport heights, as a %), and the
+// bounds on the whole scroll track. 14s of video -> 100 + 14*40 = 660vh, so one swipe
+// moves the video a second or two instead of the whole clip.
+const SCROLL_VH_PER_SECOND = 40;
+const MIN_TRACK_VH = 250;
+const MAX_TRACK_VH = 700;
+// How quickly the shown frame catches up with the scroll position (0..1 per animation frame).
+const GLIDE = 0.15;
+
+/** Height of the hero's scroll track, in vh, for a video of this length. */
+export function trackVh(duration) {
+  if (!(duration > 0)) return MIN_TRACK_VH;
+  return Math.min(MAX_TRACK_VH, Math.max(MIN_TRACK_VH, Math.round(100 + duration * SCROLL_VH_PER_SECOND)));
+}
+
 /** Scroll progress 0..1 through the hero's scroll track (0 = top of hero at the viewport top). */
 export function scrollProgress(trackTop, trackHeight, stageHeight) {
   const distance = trackHeight - stageHeight;
@@ -62,6 +77,7 @@ export function initHero({ src, hero = document.getElementById('hero'), win = wi
   let raf = 0;
   let destroyed = false;
   let lastTime = -1;
+  let shown = -1; // the time the video is gliding through (-1 = not started)
 
   const progress = () => scrollProgress(hero.getBoundingClientRect().top, hero.offsetHeight, stage.offsetHeight);
 
@@ -70,23 +86,51 @@ export function initHero({ src, hero = document.getElementById('hero'), win = wi
     if (destroyed) return;
     const d = video.duration;
     if (!Number.isFinite(d) || d <= 0) return; // metadata not ready yet
-    const t = progress() * d;
-    if (Math.abs(t - lastTime) > 1e-4) {
-      lastTime = t;
-      video.currentTime = t;
+    const target = progress() * d;
+    // Glide toward the scroll position so a quick flick doesn't jump the video.
+    if (shown < 0 || Math.abs(target - shown) < 0.02) shown = target;
+    else shown += (target - shown) * GLIDE;
+    if (Math.abs(shown - lastTime) > 1e-4) {
+      lastTime = shown;
+      video.currentTime = shown;
     }
+    if (shown !== target) schedule();
   }
   const schedule = () => {
     if (!raf && !destroyed) raf = win.requestAnimationFrame(update);
   };
 
+  // iOS Safari won't load or show a video's frames until it has been "played" once, even
+  // muted and inline, so start and immediately pause it (retried on the first touch for
+  // Low Power Mode, where autoplay is blocked).
+  const prime = () => {
+    try {
+      const p = video.play();
+      if (p && p.then) p.then(() => video.pause()).catch(() => {});
+      else video.pause();
+    } catch {
+      /* ignore */
+    }
+  };
+  const onMeta = () => {
+    hero.style.height = trackVh(video.duration) + 'vh';
+    prime();
+    schedule();
+  };
   const onReady = () => {
     video.classList.add('ready');
     schedule();
   };
+  const onFirstTouch = () => {
+    prime();
+    win.removeEventListener('touchstart', onFirstTouch);
+  };
   const onFail = () => destroy(); // fall back to the static still
 
+  video.addEventListener('loadedmetadata', onMeta);
   video.addEventListener('loadeddata', onReady);
+  video.addEventListener('canplay', onReady);
+  win.addEventListener('touchstart', onFirstTouch, { passive: true });
   video.addEventListener('durationchange', schedule);
   video.addEventListener('error', onFail);
   win.addEventListener('scroll', schedule, { passive: true });
@@ -99,6 +143,8 @@ export function initHero({ src, hero = document.getElementById('hero'), win = wi
     if (raf) win.cancelAnimationFrame(raf);
     win.removeEventListener('scroll', schedule);
     win.removeEventListener('resize', schedule);
+    win.removeEventListener('touchstart', onFirstTouch);
+    hero.style.height = '';
     video.remove();
     hero.classList.remove('hero-scrub');
     hero.replaceChildren(...originalChildren);

@@ -96,7 +96,7 @@ Apps Script can't import the site's ES modules. The rules are small, so they liv
 - `gallery/index.html` checks the phase first. Before Phase 3 it calls `location.replace('../')`. Its photo markup sits in a `<template>`, so nothing loads before then.
 
 ### 7. Hero scrubber built behind a feature check, still image by default
-- When an asset is configured (`config.heroVideo`), the hero becomes a tall scroll section (≈250vh) with a `position:sticky` full-viewport media layer. A `requestAnimationFrame` loop maps section scroll progress (0–1) to `video.currentTime = p * duration`.
+- When an asset is configured (`config.heroVideo`), the hero becomes a tall scroll section (100vh plus 40vh per second of video, between 250vh and 700vh, so a swipe moves the video gently) with a `position:sticky` full-viewport media layer. A `requestAnimationFrame` loop maps section scroll progress (0–1) to `video.currentTime = p * duration`.
 - For smooth reverse seeking, the video must be encoded with every frame as a keyframe (`ffmpeg … -g 1`, H.264 MP4, muted, `playsinline`). If iOS Safari still seeks poorly with Rae's asset, the fallback is an image sequence drawn to `<canvas>` behind the same progress function. That choice is made when the asset arrives, without changing the spec.
 - Without an asset, or under reduced motion, the hero is exactly the mockup's still-image layout. GSAP ScrollTrigger is rejected, since it adds a dependency for one effect.
 

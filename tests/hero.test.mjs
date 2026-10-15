@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { scrollProgress, canScrub, initHero } from '../site/js/hero.js';
+import { scrollProgress, canScrub, initHero, trackVh } from '../site/js/hero.js';
 
 test('progress is 0 at the top of the hero and 1 once the pinned stage has been scrolled through', () => {
   // track 2250px tall, stage 900px → 1350px of scrubbing
@@ -57,4 +57,12 @@ test('without a video, or when scrubbing is not allowed, the hero is left untouc
     h.destroy(); // safe to call
   }
   assert.equal(touched, false, 'inactive hero must not be modified');
+});
+
+test('the scroll track grows with the video length, within bounds', () => {
+  assert.equal(trackVh(14), 660); // 100 + 14 * 40
+  assert.equal(trackVh(2), 250); // short clips still get a usable minimum
+  assert.equal(trackVh(60), 700); // long clips are capped
+  assert.equal(trackVh(NaN), 250);
+  assert.equal(trackVh(0), 250);
 });
