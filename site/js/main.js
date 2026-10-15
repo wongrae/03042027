@@ -7,6 +7,7 @@ import { syncClock } from './clock.js';
 import { pageNowMs } from './page-now.js';
 import { setupMarquee } from './marquee.js';
 import { initHero } from './hero.js';
+import { initReveal } from './reveal.js';
 
 const pillSlot = document.getElementById('pill-slot');
 const gallerySlot = document.getElementById('gallery-slot');
@@ -54,6 +55,7 @@ function tick() {
 
 // Hero scroll-scrub (no-op until config.heroVideo is set, or for reduced-motion visitors).
 initHero({ src: config.heroVideo });
+initReveal();
 
 (async () => {
   clock = await syncClock({ timeoutMs: 2000 });

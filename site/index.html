@@ -33,13 +33,19 @@
   <!-- ============ INFO (a single collage photo can replace the blush background once supplied) ============ -->
   <div class="info-shell" style="width:100vw; margin-left:calc(50% - 50vw); box-sizing:border-box; background:var(--bg-blush); border-top:1px dashed var(--line); border-bottom:1px dashed var(--line); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;">
     <div class="info-text" style="margin:0 auto; position:relative; z-index:3; text-align:center;">
-      <div class="eyebrow">Date</div>
-      <p class="serif" style="font-size:26px; margin:10px 0 22px;">3 April 2027</p>
-      <div class="eyebrow">Time</div>
-      <p class="serif" style="font-size:26px; margin:10px 0 22px;">12 &ndash; 3pm</p>
-      <div class="eyebrow">Venue</div>
-      <p class="serif" style="font-size:26px; margin:10px 0 4px;">Red House Seafood, Grand Copthorne</p>
-      <a href="https://maps.app.goo.gl/b9ka4vdLvXxvpiTo8" target="_blank" rel="noopener" style="font-family:'Jost',sans-serif; font-size:13px; text-decoration:underline;">Get directions</a>
+      <div data-reveal>
+        <div class="eyebrow">Date</div>
+        <p class="serif" style="font-size:26px; margin:10px 0 22px;">3 April 2027</p>
+      </div>
+      <div data-reveal style="--reveal-delay:150ms;">
+        <div class="eyebrow">Time</div>
+        <p class="serif" style="font-size:26px; margin:10px 0 22px;">12 &ndash; 3pm</p>
+      </div>
+      <div data-reveal style="--reveal-delay:300ms;">
+        <div class="eyebrow">Venue</div>
+        <p class="serif" style="font-size:26px; margin:10px 0 4px;">Red House Seafood, Grand Copthorne</p>
+        <a href="https://maps.app.goo.gl/b9ka4vdLvXxvpiTo8" target="_blank" rel="noopener" style="font-family:'Jost',sans-serif; font-size:13px; text-decoration:underline;">Get directions</a>
+      </div>
     </div>
   </div>
 
