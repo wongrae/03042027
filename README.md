@@ -48,21 +48,26 @@ Open `http://localhost:8080/rsvp/?api=http://localhost:8787/` (the `?api=` is re
 
 ## Hero video (scroll-scrubbing)
 
-Until a video is supplied the hero shows the placeholder still (`site/img/hero-still.jpg`). To switch on scroll-scrubbing:
+The hero is a scroll-scrubbed video: the frame follows how far you have scrolled, forwards and backwards (no autoplay). It is already switched on with `site/video/hero.mp4` (`heroVideo` in `site/js/config.js`), and `site/img/hero-still.jpg` is the picture shown while it loads and as the fallback.
 
-1. Prepare the video **as a short, silent, all-keyframe MP4** — every frame a keyframe is what lets it scrub smoothly *backwards* as well as forwards (especially on iPhones). With [ffmpeg](https://ffmpeg.org/):
+To use a different clip:
+
+1. Make it **short, silent and all-keyframe**: every frame a keyframe is what lets it scrub smoothly *backwards* as well as forwards (especially on iPhones). With [ffmpeg](https://ffmpeg.org/):
 
    ```bash
-   ffmpeg -i input.mov -an -vf "scale=1280:-2,fps=30" \
-     -c:v libx264 -preset slow -crf 26 -g 1 -pix_fmt yuv420p -movflags +faststart \
-     site/img/hero.mp4
+   ffmpeg -i source-media/hero/hero-source.mov -t 6.933 -an -vf "scale=720:-2" \
+     -c:v libx264 -preset slow -crf 28 -g 1 -pix_fmt yuv420p -movflags +faststart \
+     site/video/hero.mp4
+   ffmpeg -i site/video/hero.mp4 -frames:v 1 -q:v 4 site/img/hero-still.jpg
    ```
 
-   `-g 1` makes every frame a keyframe, so files get big: aim for **5–10 seconds** and **under ~15 MB** (raise `-crf` or lower the width if it's larger).
-2. In `site/js/config.js` set `heroVideo: './img/hero.mp4'`, then commit and push.
-3. Test on a real iPhone and an Android phone: scroll down and back up — the frame should follow your finger in both directions.
+   `-t` trims the length (add `-ss <start>` before `-i` to start later). `-g 1` makes files big, so aim for **5-10 seconds** and **under ~10 MB** (raise `-crf` or lower the width if it is larger). The second command makes the still from the first frame so there is no flash when the video appears. Keep original clips in `source-media/` (not published).
+2. If the file name changes, update `heroVideo` in `site/js/config.js`, then commit and push.
+3. Test on a real iPhone and an Android phone: scroll down and back up; the frame should follow your finger in both directions.
 
-Scrubbing is skipped (the still image stays) for visitors who ask their device for reduced motion, and on browsers that can't pin the hero; if the video fails to load the page falls back to the still automatically. If iPhone seeking is still jerky with your clip, the fallback is to draw an image sequence onto a `<canvas>` using the same scroll progress — ask Claude to add that.
+How long the scroll takes is set automatically from the clip length (100vh plus 40vh per second of video, between 250vh and 700vh). To change the pace, edit `SCROLL_VH_PER_SECOND` in `site/js/hero.js`.
+
+Scrubbing is skipped (the still image stays) for visitors who ask their device for reduced motion, and on browsers that cannot pin the hero; if the video fails to load the page falls back to the still automatically. If iPhone seeking is still jerky with your clip, the fallback is to draw an image sequence onto a `<canvas>` using the same scroll progress: ask Claude to add that.
 
 ## Deploying (GitHub Pages)
 

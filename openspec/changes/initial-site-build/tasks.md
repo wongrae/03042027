@@ -51,7 +51,7 @@ Tasks marked **(Rae)** need Rae's accounts or decisions. Claude Code prepares ev
 ## 7. Hero scroll-scrubbing (`hero-animation`)
 
 - [x] 7.1 Implement `site/js/hero.js` per design Decision 7: active only when `config.heroVideo` is set and reduced motion is off; tall section with a sticky media layer; rAF scroll-progress → `currentTime`; otherwise leave the still layout untouched; verify with a temporary all-keyframe test clip (generated with ffmpeg from the still image or any short clip) that scrolling down and up scrubs both ways and holds when scrolling stops, then remove the test clip
-- [ ] 7.2 Document in `README.md` how to add Rae's asset (the ffmpeg all-keyframe command, the file location, setting `heroVideo`) and the canvas image-sequence fallback; verify the ffmpeg command runs as written on the test clip
+- [x] 7.2 Document in `README.md` how to add Rae's asset (the ffmpeg all-keyframe command, the file location, setting `heroVideo`) and the canvas image-sequence fallback; verify the ffmpeg command runs as written on the test clip
 - [ ] 7.3 **(Rae, when ready)** Supply the hero video; encode it, set `heroVideo`, test scrubbing on iOS Safari and Android Chrome; if iOS seeking is jerky, switch to the canvas image-sequence path; verify smooth scrubbing on both
 
 ## 8. Deploy
