@@ -48,7 +48,7 @@ Open `http://localhost:8080/rsvp/?api=http://localhost:8787/` (the `?api=` is re
 
 ## Hero video (scroll-scrubbing)
 
-Until a video is supplied the hero shows the placeholder still (`site/img/hero-video-still.jpg`). To switch on scroll-scrubbing:
+Until a video is supplied the hero shows the placeholder still (`site/img/hero-still.jpg`). To switch on scroll-scrubbing:
 
 1. Prepare the video **as a short, silent, all-keyframe MP4** — every frame a keyframe is what lets it scrub smoothly *backwards* as well as forwards (especially on iPhones). With [ffmpeg](https://ffmpeg.org/):
 
