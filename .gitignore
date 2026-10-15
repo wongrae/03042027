@@ -3,3 +3,6 @@ node_modules/
 *.csv
 *.xlsx
 .DS_Store
+
+# Original media (large; kept locally, not published)
+source-media/
