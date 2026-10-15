@@ -35,10 +35,24 @@ createServer(async (req, res) => {
       file = join(file, 'index.html');
     }
     const body = await readFile(file);
-    res.writeHead(200, {
+    const headers = {
       'Content-Type': types[extname(file)] || 'application/octet-stream',
       'Cache-Control': 'no-store',
-    });
+      'Accept-Ranges': 'bytes', // browsers need byte ranges to seek in video (the hero scrub)
+    };
+    const range = /^bytes=([0-9]*)-([0-9]*)$/.exec(req.headers.range || '');
+    if (range && (range[1] || range[2])) {
+      const start = range[1] ? Number(range[1]) : Math.max(0, body.length - Number(range[2]));
+      const end = range[1] && range[2] ? Math.min(Number(range[2]), body.length - 1) : body.length - 1;
+      if (start > end || start >= body.length) {
+        res.writeHead(416, { 'Content-Range': `bytes */${body.length}` }).end();
+        return;
+      }
+      res.writeHead(206, { ...headers, 'Content-Range': `bytes ${start}-${end}/${body.length}`, 'Content-Length': end - start + 1 });
+      res.end(body.subarray(start, end + 1));
+      return;
+    }
+    res.writeHead(200, headers);
     res.end(body);
   } catch (e) {
     res.writeHead(e.code === 403 ? 403 : 404, { 'Content-Type': 'text/plain' }).end('Not found');

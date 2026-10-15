@@ -16,5 +16,5 @@ export const config = {
 
   // Path to the hero scroll-scrub video, e.g. './img/hero.mp4'. Leave null to
   // keep the static still image until the real asset is supplied.
-  heroVideo: null,
+  heroVideo: './video/hero.mp4',
 };
