@@ -72,3 +72,12 @@ Scrubbing is skipped (the still image stays) for visitors who ask their device f
 ## Deploying (GitHub Pages)
 
 `.github/workflows/pages.yml` runs the tests and publishes `site/` on every push to `main`. One-time setup: create a **public** GitHub repository, push this project to it, then in the repo go to **Settings → Pages → Source: GitHub Actions**. The site appears at `https://<your-username>.github.io/<repo-name>/`. All links in the site are relative, so it works the same under a custom domain.
+
+## Cleanup (local tools)
+
+Two portable tools were downloaded outside the project to build and publish the site. Neither is part of the site, and both can be deleted once you are done pushing and encoding video:
+
+- `C:\Users\WongR\gh-portable`: GitHub CLI, used to sign in and push. Deleting it does not sign you out of GitHub or stop the site; the saved login is in Windows credential storage (`gh auth logout` removes it first, if you want that).
+- `C:\Users\WongR\ffmpeg-portable`: ffmpeg, used to encode the hero video (see *Hero video* above). Keep it if you will make another clip.
+
+Also left for later: the real guest list (replace the test rows in the Sheet, run **Wedding → Check guest list**, then clear the test guests' `Code` cells) and the optional custom domain.
