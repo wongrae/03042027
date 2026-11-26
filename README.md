@@ -82,7 +82,7 @@ ffmpeg -i source-media/swipe/<your-clip>.mp4 -an \
 ffmpeg -i site/video/swipe.mp4 -frames:v 1 -q:v 4 site/img/swipe-still.jpg
 ```
 
-`-crf 22` is gentler than the hero's 28: detailed landscapes break up into blotches at 28. For a large source (1080p or more), add `-vf "scale=1280:-2"` after `-an` and check the file is under ~10 MB. The section is as tall as the clip's shape: full width, and never taller than the screen. How far you swipe to get through the whole clip is set by `SWIPE_WIDTHS_PER_CLIP` in `site/js/swipe.js` (default 3 section-widths). Reduced-motion visitors, and browsers where the video fails to load, see the still.
+`-crf 22` is gentler than the hero's 28: detailed landscapes break up into blotches at 28. For a large source (1080p or more), add `-vf "scale=1280:-2"` after `-an` and check the file is under ~10 MB. The section is as tall as the clip's shape: full width, and never taller than the screen. How far you swipe to get through the whole clip is set by `SWIPE_WIDTHS_PER_CLIP` in `site/js/swipe.js` (default 2.25 section-widths; lower is faster). Reduced-motion visitors, and browsers where the video fails to load, see the still.
 
 ## Deploying (GitHub Pages)
 

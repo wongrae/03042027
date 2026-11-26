@@ -24,4 +24,4 @@ The landing page has one scroll-scrubbed video (the hero) with the couple's name
 
 - **Code:** `site/index.html`, `site/css/base.css`, `site/js/hero.js`, `site/js/main.js` and `site/js/config.js` change. New files are `site/js/video-scrub.js`, `site/js/swipe.js` and `tests/swipe.test.mjs`. `tests/hero.test.mjs` is kept passing.
 - **Media:** `site/video/swipe.mp4` and `site/img/swipe-still.jpg` (placeholder). The real section 3 clip needs the same encoding as the hero (short, silent, every frame a keyframe; see README).
-- **Out of scope:** pinning section 3, momentum/flick physics, and looping the clip.
+- **Out of scope:** pinning section 3, and looping the clip. (Momentum after a swipe was first out of scope, then added after Rae tested on her phone; see design Decision 8.)

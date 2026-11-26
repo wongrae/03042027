@@ -18,7 +18,19 @@ Swiping left over the section SHALL advance the video, and swiping right SHALL m
 
 #### Scenario: Swipe left
 - **WHEN** a visitor swipes left across the section
-- **THEN** the video advances in step with the finger and holds where the swipe stops
+- **THEN** the video advances in step with the finger
+
+#### Scenario: Letting go mid-swipe
+- **WHEN** a visitor flicks across the section and lifts their finger while it is still moving
+- **THEN** the video keeps moving in the same direction, slowing to a stop, and travels further after a faster flick
+
+#### Scenario: Stopping before letting go
+- **WHEN** a visitor stops their finger and then lifts it
+- **THEN** the video holds on the frame where the finger stopped
+
+#### Scenario: Catching a coasting video
+- **WHEN** the video is still coasting after a flick and the visitor touches the section again
+- **THEN** the video stops where it is
 
 #### Scenario: Swipe right
 - **WHEN** a visitor swipes right across the section

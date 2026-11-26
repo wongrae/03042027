@@ -13,7 +13,6 @@
 
 **Non-Goals:**
 - No pinning or scroll-jacking of section 3.
-- No momentum: the frame glides to where the finger stops, then holds.
 - No looping. The clip holds on its first frame at the start and its last frame at the end.
 
 ## Decisions
@@ -23,7 +22,7 @@ On section 3, CSS `touch-action: pan-y` tells the browser to handle vertical pan
 - *Alternative:* `touchmove` with `preventDefault()` and manual axis locking. This needs non-passive listeners, which hurt scroll performance, and it reimplements what `touch-action` gives for free. Rejected.
 
 ### 2. Swipe distance → video time
-Progress changes by `-dx / (sectionWidth * SWIPE_WIDTHS_PER_CLIP)`, so a swipe to the left (negative `dx`) advances. The result is clamped to 0..1, and progress × duration is fed to the same glide loop the hero uses. `SWIPE_WIDTHS_PER_CLIP` (default 3, meaning three full-width swipes cover the whole clip) is a named constant like `SCROLL_VH_PER_SECOND`, so the pace is easy to tune. The math lives in a pure function (`swipeProgress(start, dx, width)`) so it can be unit tested.
+Progress changes by `-dx / (sectionWidth * SWIPE_WIDTHS_PER_CLIP)`, so a swipe to the left (negative `dx`) advances. The result is clamped to 0..1, and progress × duration is fed to the same glide loop the hero uses. `SWIPE_WIDTHS_PER_CLIP` (2.25, meaning about two and a quarter full-width swipes cover the whole clip; first 3, then made faster after Rae tested it on her phone) is a named constant like `SCROLL_VH_PER_SECOND`, so the pace is easy to tune. The math lives in a pure function (`swipeProgress(start, dx, width)`) so it can be unit tested.
 
 ### 3. Desktop inputs
 - **Trackpad horizontal swipe** (`wheel` with `|deltaX| > |deltaY|`): scrubs, and calls `preventDefault()` only for those horizontal events, so Mac two-finger swipes don't trigger browser back/forward. Vertical wheel events are left alone, so the page scrolls. `overscroll-behavior-x: contain` on the section is a second guard against the history gesture.
@@ -41,6 +40,9 @@ The section is full-bleed, and its height comes from the still image's own propo
 
 ### 6. Hero text into the info section
 The hero markup becomes the still, then the video, with no gradient and no `.hero-pad`. The text block moves to the top of `.info-text`, recoloured for the blush background: names in `--ink` instead of white, "and" stays `--clay`, and the eyebrow and tagline use `--ink-muted`. The ≤680px font sizes carry over. Each group gets `data-reveal` with staggered delays, ahead of Date / Time / Venue.
+
+### 8. Momentum after a swipe
+Added after phone testing, so the swipe feels like the vertical page fling. While the finger or mouse is down, the last few `{time, x}` samples are kept. On `pointerup`, `releaseVelocity` measures the speed over the final 100ms (0 if the finger had stopped), capped at 3 px/ms. The video then keeps moving at that speed, which decays exponentially (`decayVelocity`, time constant `MOMENTUM_MS` = 250ms, so the coast is about speed × 250ms in pixels). It stops when the speed drops below 0.02 px/ms or the clip reaches either end. A new touch or drag, a horizontal wheel event or an arrow key stops the coast at once. `pointercancel` (the browser took the gesture as a page scroll) doesn't fling. The trackpad wheel path adds none, because the OS already sends momentum wheel events.
 
 ## Risks / Trade-offs
 
