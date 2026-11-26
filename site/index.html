@@ -14,40 +14,43 @@
 
 <div class="page">
 
-  <!-- ============ HERO (scroll-scrubbing video, full bleed; static still until the video is supplied) ============ -->
+  <!-- ============ HERO (scroll-scrubbing video, full bleed, no text over it; static still until the video loads) ============ -->
   <div class="hero-shell" id="hero" style="position:relative; overflow:hidden;">
     <img id="hero-still" src="./img/hero-still.jpg" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">
-    <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(20,15,10,.6), rgba(20,15,10,0) 58%);"></div>
-    <div class="hero-pad" style="position:relative; z-index:2; box-sizing:border-box; display:flex; flex-direction:column; justify-content:flex-end;">
-      <div class="eyebrow" style="color:rgba(255,255,255,.78);">We are getting married</div>
-      <div style="margin-top:16px;">
-        <span class="serif hero-name" style="font-weight:500; color:#FFFFFF; display:block; line-height:1;">Rae</span>
-        <span class="serif hero-and" style="font-style:italic; color:var(--clay); display:inline-block; margin:8px 0;">and</span>
-        <span class="serif hero-name" style="font-weight:500; color:#FFFFFF; display:block; line-height:1;">Rayven</span>
-      </div>
-      <p class="serif hero-tagline" style="font-style:italic; color:rgba(255,255,255,.88); margin:20px 0 0; line-height:1.5;">Would like to invite you to a lunch reception</p>
-      <div class="eyebrow" style="margin-top:26px; color:rgba(255,255,255,.78);">April 3, 2027</div>
-    </div>
   </div>
 
   <!-- ============ INFO (a single collage photo can replace the blush background once supplied) ============ -->
   <div class="info-shell" style="width:100vw; margin-left:calc(50% - 50vw); box-sizing:border-box; background:var(--bg-blush); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;">
     <div class="info-text" style="margin:0 auto; position:relative; z-index:3; text-align:center;">
       <div data-reveal>
+        <div class="eyebrow">We are getting married</div>
+      </div>
+      <div data-reveal style="--reveal-delay:150ms; margin-top:16px;">
+        <span class="serif couple-name" style="font-weight:500; display:block; line-height:1;">Rae</span>
+        <span class="serif couple-and" style="font-style:italic; color:var(--clay); display:inline-block; margin:8px 0;">and</span>
+        <span class="serif couple-name" style="font-weight:500; display:block; line-height:1;">Rayven</span>
+      </div>
+      <p data-reveal class="serif couple-tagline" style="--reveal-delay:300ms; font-style:italic; color:var(--ink-muted); margin:20px auto 44px; line-height:1.5;">Would like to invite you to a lunch reception</p>
+      <div data-reveal style="--reveal-delay:450ms;">
         <div class="eyebrow">Date</div>
         <p class="serif" style="font-size:26px; margin:10px 0 22px;">3 April 2027</p>
       </div>
-      <div data-reveal style="--reveal-delay:150ms;">
+      <div data-reveal style="--reveal-delay:600ms;">
         <div class="eyebrow">Time</div>
         <p class="serif" style="font-size:26px; margin:10px 0 22px;">12 &ndash; 3pm</p>
       </div>
-      <div data-reveal style="--reveal-delay:300ms;">
+      <div data-reveal style="--reveal-delay:750ms;">
         <div class="eyebrow">Venue</div>
         <p class="serif" style="font-size:26px; margin:10px 0 4px;">Red House Seafood, Grand Copthorne</p>
         <a href="https://maps.app.goo.gl/b9ka4vdLvXxvpiTo8" target="_blank" rel="noopener" style="font-family:'Jost',sans-serif; font-size:13px; text-decoration:underline;">Get directions</a>
       </div>
     </div>
   </div>
+
+  <!-- ============ SWIPE VIDEO (swipe left/right to scrub; vertical swipes scroll the page; no text over it) ============ -->
+  <section class="swipe-shell" id="swipe-video">
+    <img id="swipe-still" src="./img/swipe-still.jpg" alt="" draggable="false">
+  </section>
 
   <!-- ============ GALLERY (wedding day only — mounted by main.js in Phase 3) ============ -->
   <div id="gallery-slot"></div>

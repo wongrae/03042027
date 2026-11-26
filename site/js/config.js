@@ -17,4 +17,8 @@ export const config = {
   // Path to the hero scroll-scrub video, e.g. './img/hero.mp4'. Leave null to
   // keep the static still image until the real asset is supplied.
   heroVideo: './video/hero.mp4',
+
+  // Path to the swipe-scrubbed video below the info section. PLACEHOLDER clip
+  // until the real one is supplied; null keeps the still image (img/swipe-still.jpg).
+  swipeVideo: './video/swipe.mp4',
 };

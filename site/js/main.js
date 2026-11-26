@@ -7,6 +7,7 @@ import { syncClock } from './clock.js';
 import { pageNowMs } from './page-now.js';
 import { setupMarquee } from './marquee.js';
 import { initHero } from './hero.js';
+import { initSwipe } from './swipe.js';
 import { initReveal } from './reveal.js';
 
 const pillSlot = document.getElementById('pill-slot');
@@ -55,6 +56,8 @@ function tick() {
 
 // Hero scroll-scrub (no-op until config.heroVideo is set, or for reduced-motion visitors).
 initHero({ src: config.heroVideo });
+// Swipe-scrubbed video below the info section (all phases; the still stays for reduced-motion visitors).
+initSwipe({ src: config.swipeVideo });
 initReveal();
 
 (async () => {

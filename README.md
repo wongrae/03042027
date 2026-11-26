@@ -48,7 +48,7 @@ Open `http://localhost:8080/rsvp/?api=http://localhost:8787/` (the `?api=` is re
 
 ## Hero video (scroll-scrubbing)
 
-The hero is a scroll-scrubbed video: the frame follows how far you have scrolled, forwards and backwards (no autoplay). It is already switched on with `site/video/hero.mp4` (`heroVideo` in `site/js/config.js`), and `site/img/hero-still.jpg` is the picture shown while it loads and as the fallback.
+The hero is a scroll-scrubbed video with no text over it (the names are in the info section below). The frame follows how far you have scrolled, forwards and backwards (no autoplay). It is already switched on with `site/video/hero.mp4` (`heroVideo` in `site/js/config.js`), and `site/img/hero-still.jpg` is the picture shown while it loads and as the fallback.
 
 To use a different clip:
 
@@ -65,9 +65,24 @@ To use a different clip:
 2. If the file name changes, update `heroVideo` in `site/js/config.js`, then commit and push.
 3. Test on a real iPhone and an Android phone: scroll down and back up; the frame should follow your finger in both directions.
 
-How long the scroll takes is set automatically from the clip length (100vh plus 40vh per second of video, between 250vh and 700vh). To change the pace, edit `SCROLL_VH_PER_SECOND` in `site/js/hero.js`.
+How long the scroll takes is set automatically from the clip length (100vh plus 40vh per second of video, between 250vh and 700vh). To change the pace, edit `SCROLL_VH_PER_SECOND` in `site/js/hero.js`. The video handling shared with the swipe video (iPhone priming, smooth gliding between frames) is in `site/js/video-scrub.js`.
 
 Scrubbing is skipped (the still image stays) for visitors who ask their device for reduced motion, and on browsers that cannot pin the hero; if the video fails to load the page falls back to the still automatically. If iPhone seeking is still jerky with your clip, the fallback is to draw an image sequence onto a `<canvas>` using the same scroll progress: ask Claude to add that.
+
+## Swipe video (below the info section)
+
+The section under the date/time/venue text is a second scrubbed video, driven by sideways swipes instead of scrolling. Swiping left advances it and swiping right rewinds it. Swiping up or down over it still scrolls the page, and it is not pinned. On desktop, a sideways trackpad swipe, a mouse drag or the ← → keys (after clicking or tabbing to it) scrub it. It currently uses a **placeholder** clip: `site/video/swipe.mp4` (`swipeVideo` in `site/js/config.js`), with `site/img/swipe-still.jpg` as its still.
+
+To use the real clip, encode it the same way as the hero clip (keep the original in `source-media/swipe/`):
+
+```bash
+ffmpeg -i source-media/swipe/<your-clip>.mp4 -an -vf "scale=848:-2" \
+  -c:v libx264 -preset slow -crf 28 -g 1 -pix_fmt yuv420p -movflags +faststart \
+  site/video/swipe.mp4
+ffmpeg -i site/video/swipe.mp4 -frames:v 1 -q:v 4 site/img/swipe-still.jpg
+```
+
+For a portrait clip, use `scale=720:-2` as for the hero. The section is as tall as the clip's shape: full width, and never taller than the screen. How far you swipe to get through the whole clip is set by `SWIPE_WIDTHS_PER_CLIP` in `site/js/swipe.js` (default 3 section-widths). Reduced-motion visitors, and browsers where the video fails to load, see the still.
 
 ## Deploying (GitHub Pages)
 
