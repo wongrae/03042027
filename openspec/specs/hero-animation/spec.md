@@ -25,7 +25,7 @@ Scrolling back up through the hero section SHALL scrub the animation backward to
 - **THEN** the animation moves backward, showing the frame that matches each scroll position
 
 ### Requirement: Single uploaded asset drives the effect
-The hero animation SHALL be driven by a single asset supplied by Rae: a video, or an equivalent image sequence. This is one of only two manual media uploads in the design, the other being the info section's collage photo.
+The hero animation SHALL be driven by a single asset supplied by Rae: a video, or an equivalent image sequence. This is one of three manual media uploads in the design. The others are the info section's collage photo and the swipe video section's clip.
 
 #### Scenario: Asset supplied
 - **WHEN** Rae's hero asset is added to the site and deployed
@@ -41,3 +41,10 @@ Until the asset is supplied, and for visitors who request reduced motion or whos
 #### Scenario: Reduced motion requested
 - **WHEN** a visitor with `prefers-reduced-motion: reduce` views the hero
 - **THEN** they see a still image instead of scroll-driven animation
+
+### Requirement: Hero shows footage only
+The hero SHALL show only the video (or its still), with no text or gradient overlaid. The invitation text ("We are getting married", the couple's names and the reception line) SHALL appear at the top of the info section instead, above Date / Time / Venue.
+
+#### Scenario: Landing on the page
+- **WHEN** a visitor opens the landing page
+- **THEN** the hero shows the video with no text on it, and the names appear in the info section with the rest of the wedding details

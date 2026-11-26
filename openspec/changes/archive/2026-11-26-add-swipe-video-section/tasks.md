@@ -15,7 +15,7 @@
 - [x] 3.2 Implement `site/js/swipe.js`: a pure `swipeProgress(start, dx, width)`; pointer handlers with `touch-action: pan-y`, `pointercancel` handling and `cursor: grab`; horizontal-dominant `wheel` with `preventDefault` plus `overscroll-behavior-x: contain`; focusable ←/→ keys; still fallback on reduced motion or error. Wire it up in `main.js`. Verify in desktop Chrome with a trackpad and with mouse drag
 - [x] 3.3 Add `tests/swipe.test.mjs` covering: a left swipe advances, a right swipe rewinds, clamping at both ends, a zero/NaN width is safe, reduced motion leaves the still; verify `npm test` passes
 - [x] 3.5 After phone testing: make swiping faster (`SWIPE_WIDTHS_PER_CLIP` 3 → 2.25) and add momentum after a flick (`releaseVelocity` / `decayVelocity`, `MOMENTUM_MS`), with unit tests; verify in Chrome that a quick drag coasts after release and a drag that stops before release doesn't
-- [ ] 3.4 **(Rae)** On a real iPhone and an Android phone: swipe left/right over section 3 (the frame follows in both directions), swipe up/down over it (the page scrolls and the frame doesn't change), and check the hero still scrubs
+- [x] 3.4 **(Rae)** On a real iPhone and an Android phone: swipe left/right over section 3 (the frame follows in both directions), swipe up/down over it (the page scrolls and the frame doesn't change), and check the hero still scrubs
 
 ## 4. Docs
 
