@@ -76,13 +76,13 @@ The section under the date/time/venue text is a second scrubbed video, driven by
 To use the real clip, encode it the same way as the hero clip (keep the original in `source-media/swipe/`):
 
 ```bash
-ffmpeg -i source-media/swipe/<your-clip>.mp4 -an -vf "scale=848:-2" \
-  -c:v libx264 -preset slow -crf 28 -g 1 -pix_fmt yuv420p -movflags +faststart \
+ffmpeg -i source-media/swipe/<your-clip>.mp4 -an \
+  -c:v libx264 -preset slow -crf 22 -g 1 -pix_fmt yuv420p -movflags +faststart \
   site/video/swipe.mp4
 ffmpeg -i site/video/swipe.mp4 -frames:v 1 -q:v 4 site/img/swipe-still.jpg
 ```
 
-For a portrait clip, use `scale=720:-2` as for the hero. The section is as tall as the clip's shape: full width, and never taller than the screen. How far you swipe to get through the whole clip is set by `SWIPE_WIDTHS_PER_CLIP` in `site/js/swipe.js` (default 3 section-widths). Reduced-motion visitors, and browsers where the video fails to load, see the still.
+`-crf 22` is gentler than the hero's 28: detailed landscapes break up into blotches at 28. For a large source (1080p or more), add `-vf "scale=1280:-2"` after `-an` and check the file is under ~10 MB. The section is as tall as the clip's shape: full width, and never taller than the screen. How far you swipe to get through the whole clip is set by `SWIPE_WIDTHS_PER_CLIP` in `site/js/swipe.js` (default 3 section-widths). Reduced-motion visitors, and browsers where the video fails to load, see the still.
 
 ## Deploying (GitHub Pages)
 
