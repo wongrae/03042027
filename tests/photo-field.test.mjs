@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  mulberry32, layoutField, columnCount, photoUnit, copiesNeeded, wrap, instancePosition,
-  releaseVelocity2D, keyStep, catchUp, initPhotoField, U_MIN, U_MAX, COPY_SHIFT,
+  mulberry32, layoutField, photoUnit, copiesNeeded, wrap, instancePosition, tilePosition,
+  releaseVelocity2D, keyStep, catchUp, initPhotoField, U_MIN, U_MAX, COPY_SHIFT, EDGE, SIZE_MIN, SIZE_MAX,
 } from '../site/js/photo-field.js';
 
 // The placeholder mix: portrait 4:5, landscape 3:2, square.
@@ -20,63 +20,87 @@ test('the same seed and shapes always give the same layout, a different seed a d
   }
 });
 
-test('20 photos go into 3 balanced columns, keeping each photo\'s own shape', () => {
+test('every photo keeps its own shape, gets a size in range, a unique stacking order and a small lag', () => {
   const l = layoutField(SHAPES);
-  assert.equal(l.cols, 3);
   assert.equal(l.items.length, 20);
-  const perCol = l.columns.map((_, c) => l.items.filter((it) => it.col === c).length);
-  assert.ok(perCol.every((n) => n >= 6 && n <= 8), `photos per column: ${perCol}`);
+  assert.ok(l.tileW > 0 && l.tileH > l.tileW, 'the tile is taller than wide');
+  assert.equal(l.shift, l.tileH * COPY_SHIFT);
   l.items.forEach((it) => {
     assert.ok(Math.abs(it.h / it.w - SHAPES[it.index]) < 1e-9, 'shape kept');
-    assert.ok(it.w >= 0.65 && it.w <= 1.1);
-    assert.ok(Math.abs(it.x - (it.col + 0.5)) <= 0.1 + 1e-9, 'stays near its column');
+    const size = Math.sqrt(it.w * it.h);
+    assert.ok(size >= SIZE_MIN - 1e-9 && size <= SIZE_MAX + 1e-9, `size ${size}`);
+    assert.ok(it.x >= 0 && it.x < l.tileW && it.y >= 0 && it.y < l.tileH, 'centre inside the tile');
+    assert.ok(it.lag >= 0 && it.lag <= 90);
   });
-  assert.deepEqual(l.items.map((it) => it.z).sort((a, b) => a - b), l.items.map((_, i) => i + 1)); // unique stacking order
+  assert.deepEqual(l.items.map((it) => it.z).sort((a, b) => a - b), l.items.map((_, i) => i + 1));
 });
 
-test('photos in a column stack top to bottom with only a small overlap or gap', () => {
-  const l = layoutField(SHAPES);
-  for (let c = 0; c < l.cols; c++) {
-    const col = l.items.filter((it) => it.col === c).sort((a, b) => a.y - b.y);
-    for (let i = 1; i < col.length; i++) {
-      const gap = (col[i].y - col[i].h / 2) - (col[i - 1].y + col[i - 1].h / 2);
-      assert.ok(gap >= -0.1 - 1e-9 && gap <= 0.06 + 1e-9, `gap ${gap}`);
+// Every repeat of every photo near the tile (copy m across sits m tile widths right and m × shift down).
+function repeats(l, reach = 2) {
+  const out = [];
+  for (const it of l.items) {
+    for (let m = -reach; m <= reach; m++) {
+      for (let n = -reach - 2; n <= reach + 2; n++) {
+        out.push({ it, m, n, x: it.x + m * l.tileW, y: it.y + m * l.shift + n * l.tileH });
+      }
     }
-    // the repeat seam is a normal join too: first photo's top, one period later, vs last photo's bottom
-    const first = col[0], last = col[col.length - 1];
-    const seam = (first.y - first.h / 2 + l.columns[c].height) - (last.y + last.h / 2);
-    assert.ok(seam >= -0.1 - 1e-9 && seam <= 0.06 + 1e-9, `seam ${seam}`);
+  }
+  return out;
+}
+
+test('photos are scattered, not lined up in columns or rows', () => {
+  for (const seed of [20270403, 1, 2, 3, 4]) {
+    const l = layoutField(SHAPES, seed);
+    // In a column layout many photos share (nearly) the same left edge or centre; here few do.
+    for (const key of ['x', 'y']) {
+      const v = l.items.map((it) => it[key]).sort((a, b) => a - b);
+      let most = 1;
+      for (let i = 0; i < v.length; i++) most = Math.max(most, v.filter((w) => w >= v[i] && w < v[i] + 0.1).length);
+      assert.ok(most <= 4, `seed ${seed}: ${most} photos line up on ${key}`);
+    }
+  }
+});
+
+test('photos overlap only at their edges, including across the repeat seams', () => {
+  for (const seed of [20270403, 1, 2, 3, 4]) {
+    const l = layoutField(SHAPES, seed);
+    const all = repeats(l, 1);
+    for (const a of l.items) {
+      for (const b of all) {
+        if (b.it === a && b.m === 0 && b.n === 0) continue;
+        const ox = (a.w + b.it.w) / 2 - Math.abs(b.x - a.x);
+        const oy = (a.h + b.it.h) / 2 - Math.abs(b.y - a.y);
+        if (ox <= 0 || oy <= 0) continue;
+        // the overlap is no deeper than the two edge strips put together, in at least one direction
+        const okX = ox <= EDGE * (a.w + b.it.w) + 1e-3;
+        const okY = oy <= EDGE * (a.h + b.it.h) + 1e-3;
+        assert.ok(okX || okY, `seed ${seed}: photos ${a.index} and ${b.it.index} overlap by ${ox.toFixed(2)} × ${oy.toFixed(2)}`);
+      }
+    }
   }
 });
 
 // Samples the repeating layout on a grid: how much area is covered, and how much of each photo is visible.
-function coverage(l) {
-  const W = l.tileW, H = 5, step = 0.04, rects = [];
-  for (const it of l.items) {
-    const ph = l.columns[it.col].height;
-    for (let cx = -1; cx <= 1; cx++) {
-      for (let k = -2; k <= Math.ceil(H / ph) + 2; k++) {
-        const y = it.y + k * ph + cx * COPY_SHIFT * ph; // sideways repeats are shifted down, as on the page
-        rects.push({ key: `${it.index}:${cx}:${k}`, z: it.z, x0: it.x + cx * W - it.w / 2, x1: it.x + cx * W + it.w / 2, y0: y - it.h / 2, y1: y + it.h / 2 });
-      }
-    }
-  }
+function coverage(l, RW = 6, RH = 6, step = 0.04) {
+  const rects = repeats(l, 3)
+    .map((r) => ({ r, z: r.it.z, x0: r.x - r.it.w / 2, x1: r.x + r.it.w / 2, y0: r.y - r.it.h / 2, y1: r.y + r.it.h / 2 }))
+    .filter((q) => q.x1 > 0 && q.x0 < RW && q.y1 > 0 && q.y0 < RH);
   let covered = 0, total = 0;
-  const area = {}, vis = {};
-  for (let x = 0; x < W; x += step) {
-    for (let y = 0; y < H; y += step) {
+  const area = new Map(), vis = new Map();
+  for (let x = 0; x < RW; x += step) {
+    for (let y = 0; y < RH; y += step) {
       total++;
       let top = null;
-      for (const r of rects) {
-        if (x < r.x0 || x >= r.x1 || y < r.y0 || y >= r.y1) continue;
-        area[r.key] = (area[r.key] || 0) + 1;
-        if (!top || r.z > top.z) top = r;
+      for (const q of rects) {
+        if (x < q.x0 || x >= q.x1 || y < q.y0 || y >= q.y1) continue;
+        area.set(q, (area.get(q) || 0) + 1);
+        if (!top || q.z > top.z) top = q;
       }
-      if (top) { covered++; vis[top.key] = (vis[top.key] || 0) + 1; }
+      if (top) { covered++; vis.set(top, (vis.get(top) || 0) + 1); }
     }
   }
-  const inside = rects.filter((r) => r.x0 >= 0 && r.x1 <= W && r.y0 >= 0 && r.y1 <= H);
-  return { covered: covered / total, minVisible: Math.min(...inside.map((r) => (vis[r.key] || 0) / area[r.key])) };
+  const inside = rects.filter((q) => q.x0 >= 0 && q.x1 <= RW && q.y0 >= 0 && q.y1 <= RH);
+  return { covered: covered / total, minVisible: Math.min(...inside.map((q) => (vis.get(q) || 0) / area.get(q))) };
 }
 
 test('the field is densely filled, and overlapped photos stay mostly visible', () => {
@@ -87,16 +111,17 @@ test('the field is densely filled, and overlapped photos stay mostly visible', (
   }
 });
 
-test('other photo counts still lay out (10 and 30), and an empty list gives an empty layout', () => {
-  for (const n of [1, 2, 10, 30]) {
+test('other photo counts still lay out (1 to 40), and an empty list gives an empty layout', () => {
+  for (const n of [1, 2, 5, 10, 30, 40]) {
     const l = layoutField(Array.from({ length: n }, (_, i) => SHAPES[i % 20]));
     assert.equal(l.items.length, n);
-    assert.ok(l.columns.every((c) => c.height > 0));
+    assert.ok(l.tileW > 0 && l.tileH > 0);
+    if (n >= 10) {
+      const { covered, minVisible } = coverage(l);
+      assert.ok(covered > 0.75, `${n} photos: ${Math.round(covered * 100)}% covered`);
+      assert.ok(minVisible >= 0.6, `${n} photos: a photo is only ${Math.round(minVisible * 100)}% visible`);
+    }
   }
-  assert.equal(columnCount(10), 2);
-  assert.equal(columnCount(20), 3);
-  assert.equal(columnCount(30), 4);
-  assert.equal(columnCount(3), 2);
   assert.equal(layoutField([]).items.length, 0);
   assert.equal(layoutField(null).items.length, 0);
   // a bad shape falls back to a default instead of breaking the layout
@@ -105,10 +130,10 @@ test('other photo counts still lay out (10 and 30), and an empty list gives an e
 
 // ---------- sizing and wrapping ----------
 
-test('column width scales with the screen and is clamped at both ends', () => {
-  assert.equal(photoUnit(375, 500), U_MIN); // phone: ~131 → 150, so about 2½ columns show
+test('the photo unit scales with the screen and is clamped at both ends', () => {
+  assert.equal(photoUnit(375, 500), U_MIN); // phone: ~131 → 150, so about 2½ photos across
   const ref = photoUnit(400, 800);
-  assert.ok(ref > 165 && ref < 180, `400×800 column = ${ref}`); // afterdusk's ~170px photos
+  assert.ok(ref > 165 && ref < 180, `400×800 unit = ${ref}`); // afterdusk's ~170px photos
   assert.equal(photoUnit(1920, 810), U_MAX);
   assert.equal(photoUnit(0, 600), U_MIN);
   assert.equal(photoUnit(NaN, NaN), U_MIN);
@@ -149,34 +174,41 @@ test('a photo copy moves 1:1 with the drag and re-enters exactly one period away
   }
 });
 
-test('every column repeats with no visible jump at phone, tablet and desktop sizes', () => {
+test('the field repeats with no visible jump or overlap change at phone, tablet and desktop sizes', () => {
   const l = layoutField(SHAPES);
+  const maxW = Math.max(...l.items.map((it) => it.w)), maxH = Math.max(...l.items.map((it) => it.h));
   for (const [W, H] of [[375, 500], [412, 686], [667, 281], [1541, 708], [2560, 1080]]) {
     const u = photoUnit(W, H);
-    const mx = (1.1 / 2 + 0.1 + 0.5) * u; // same margins as the page
-    const my = (Math.max(...l.items.map((it) => it.h)) / 2 + 0.5) * u;
-    const cx = copiesNeeded(W, l.tileW * u, mx);
-    let prev = null, minVisible = Infinity, jumps = 0;
+    const margin = { x: (maxW / 2 + 0.5) * u, y: (maxH / 2 + 0.5) * u }; // same margins as the page
+    const copies = { x: copiesNeeded(W, l.tileW * u, margin.x), y: copiesNeeded(H, l.tileH * u, margin.y) };
+    let prev = null, minVisible = Infinity, jumps = 0, misplaced = 0;
     for (let s = 0; s <= 1500; s++) {
-      const ox = -s * 40, oy = s * 27; // fast: ~60,000px left and ~40,000px down, 40px per frame
+      const off = { x: (-s * 40) / u, y: (s * 27) / u }; // fast: ~60,000px left and ~40,000px down, 40px per frame
       const cur = [];
-      for (const it of l.items) {
-        const ph = l.columns[it.col].height * u;
-        const cy = copiesNeeded(H, ph, my);
-        for (let a = 0; a < cx; a++) {
-          for (let b = 0; b < cy; b++) {
-            const x = instancePosition(it.x * u, a, l.tileW * u, ox, cx, mx);
-            const y = instancePosition(it.y * u + a * COPY_SHIFT * ph, b, ph, oy, cy, my);
+      for (let a = 0; a < copies.x; a++) {
+        for (let b = 0; b < copies.y; b++) {
+          for (const it of l.items) {
+            const { x, y } = tilePosition(it, a, b, l, u, off, copies, margin);
             const hw = (it.w * u) / 2, hh = (it.h * u) / 2;
-            cur.push({ x, y, vis: x + hw > 0 && x - hw < W && y + hh > 0 && y - hh < H });
+            cur.push({ it, x, y, vis: x + hw > 0 && x - hw < W && y + hh > 0 && y - hh < H });
           }
         }
       }
       if (prev) cur.forEach((p, k) => { if ((p.vis || prev[k].vis) && (Math.abs(p.x - prev[k].x) > 60 || Math.abs(p.y - prev[k].y) > 60)) jumps++; });
+      // Every visible copy sits exactly where the endless layout puts that photo.
+      if (s % 50 === 0) {
+        for (const p of cur.filter((q) => q.vis)) {
+          const gx = (p.x + margin.x) / u - off.x - p.it.x; // whole tile repeats across
+          const m = Math.round(gx / l.tileW);
+          const gy = ((p.y + margin.y) / u - off.y - p.it.y - m * l.shift) / l.tileH;
+          if (Math.abs(gx - m * l.tileW) > 1e-6 || Math.abs(gy - Math.round(gy)) > 1e-6) misplaced++;
+        }
+      }
       minVisible = Math.min(minVisible, cur.filter((p) => p.vis).length);
       prev = cur;
     }
     assert.equal(jumps, 0, `${W}×${H}: a photo jumped while on screen`);
+    assert.equal(misplaced, 0, `${W}×${H}: a photo showed out of place`);
     assert.ok(minVisible >= 4, `${W}×${H}: only ${minVisible} photos on screen at one point`);
   }
 });
@@ -197,7 +229,7 @@ test('arrow keys move the field in the matching direction by half a column', () 
   assert.equal(keyStep('Enter', 200), null);
 });
 
-test('trailing columns catch up smoothly, and with no lag immediately', () => {
+test('trailing photos catch up smoothly, and with no lag immediately', () => {
   assert.equal(catchUp(16, 0), 1);
   const k = catchUp(16, 80);
   assert.ok(k > 0 && k < 1);
@@ -349,17 +381,17 @@ test('a drag moves the photos with the pointer; a flick then glides further and 
   assert.ok(xy(img)[0] < x1 - 50, 'kept moving left after release');
 });
 
-test('columns trail the drag by different amounts, then all settle back into the layout', async () => {
+test('photos trail the drag by different amounts, then all settle back into the layout', async () => {
   const page = fakePage();
   const r = initPhotoField({ photos: PHOTOS, section: page.section, win: page.win });
   await r.ready;
   page.flush();
   const imgs = page.photos();
   const before = imgs.map(xy);
-  page.section.dispatch('keydown', { key: 'ArrowLeft' }); // moves the field 75px left (half a 150px column)
-  page.flush(1); // one frame in: columns have moved different fractions of the way
+  page.section.dispatch('keydown', { key: 'ArrowLeft' }); // moves the field 75px left (half a 150px unit)
+  page.flush(1); // one frame in: photos have moved different fractions of the way
   const mid = new Set(imgs.map((img, i) => (before[i][0] - xy(img)[0]).toFixed(1)));
-  assert.ok(mid.size > 1, 'columns moved by different amounts mid-motion');
+  assert.ok(mid.size > 1, 'photos moved by different amounts mid-motion');
   page.flush();
   imgs.forEach((img, i) => {
     const d = before[i][0] - xy(img)[0];
@@ -396,7 +428,11 @@ test('reduced motion: drag still works, but every photo moves the same and nothi
   page.section.dispatch('pointerdown', { pointerId: 1, pointerType: 'mouse', button: 0, clientX: 300, clientY: 300, timeStamp: 0 });
   for (let i = 1; i <= 5; i++) page.section.dispatch('pointermove', { pointerId: 1, clientX: 300 - i * 4, clientY: 300, timeStamp: i * 16 });
   page.flush(1); // a single frame is enough: no trailing
-  imgs.forEach((img, i) => assert.ok(Math.abs(before[i][0] - xy(img)[0] - 20) < 0.11, 'each photo moved exactly 20px at once'));
+  imgs.forEach((img, i) => {
+    const d = before[i][0] - xy(img)[0];
+    // exactly 20px at once, unless that copy wrapped around to the other side
+    assert.ok(Math.abs(d - 20) < 0.11 || Math.abs(d) > 300, `photo ${i} moved ${d}px`);
+  });
   page.section.dispatch('pointerup', { pointerId: 1, clientX: 280, clientY: 300, timeStamp: 80 });
   assert.equal(page.flush(), 0, 'no glide frames');
 });

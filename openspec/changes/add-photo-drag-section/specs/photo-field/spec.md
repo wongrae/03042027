@@ -18,18 +18,18 @@ The landing page SHALL show the photo field section directly below the swipe vid
 - **THEN** the gallery teaser appears directly below the photo field
 
 ### Requirement: Scattered photos with no overlay
-The section SHALL show the configured photos at varied sizes in loose, staggered columns over the page background. Each photo SHALL keep its own aspect ratio (no cropping) and have no added frame, border, caption, heading or wordmark.
+The section SHALL show the configured photos at varied sizes, scattered freely over the page background with no visible rows or columns. Each photo SHALL keep its own aspect ratio (no cropping) and have no added frame, border, caption, heading or wordmark.
 
 #### Scenario: Viewing the section
 - **WHEN** the section is on screen
-- **THEN** only photos of different sizes on the page background are visible, each shown uncropped in its original proportions
+- **THEN** only photos of different sizes on the page background are visible, in no grid or column pattern, each shown uncropped in its original proportions
 
 ### Requirement: Densely filled, with overlapped photos still visible
-The photos SHALL cover most of the section (roughly 80–95% of its area), leaving only narrow strips of background and no large empty areas. Photos MAY overlap, but every photo SHALL remain at least 60% visible, and the same photo SHALL NOT appear twice in one column on a phone screen.
+The photos SHALL cover most of the section (roughly 80–95% of its area), leaving only narrow strips of background and no large empty areas. Photos MAY overlap at their edges, but every photo SHALL remain at least 60% visible, and a phone screen SHALL NOT show the same photo twice.
 
 #### Scenario: Phone screen
 - **WHEN** a visitor on a phone looks at the section at any drag position
-- **THEN** it is mostly filled with photos, no photo is mostly hidden behind another, and no photo shows twice in the same column
+- **THEN** it is mostly filled with photos, no photo is mostly hidden behind another, and no photo shows twice
 
 ### Requirement: Section height leaves room to scroll
 The section SHALL be full-bleed and shorter than the screen (about three quarters of the visible screen height), so that on any screen part of the page above or below it is always visible while it is centred.

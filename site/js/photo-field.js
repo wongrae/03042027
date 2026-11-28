@@ -1,19 +1,18 @@
 // Drag-around photo field (the section below the swipe video): a dense wall of
 // photos that visitors push around in any direction, repeating endlessly.
-// After a flick it glides and slows to a stop; columns trail the drag by
+// After a flick it glides and slows to a stop; photos trail the drag by
 // slightly different amounts for a subtle sense of depth, then settle back
 // into the layout.
 //
-// Layout (modelled on the narrow-screen field of afterduskmedia.com): staggered
-// masonry columns of big photos. Photos are about as wide as their column, stack
-// with a small overlap, poke a little into the neighbouring column, and keep
-// their own shape, so the field is densely filled and every photo stays mostly
-// visible.
+// Layout (modelled on the narrow-screen field of afterduskmedia.com): photos of
+// different sizes scattered freely, with no rows or columns, packed so they
+// cover most of the area and overlap only at their edges. Each keeps its own
+// shape, so the field is densely filled and every photo stays mostly visible.
 //
-// How the endless repeat works: the columns form one horizontal "tile" that is
-// copied sideways, and each column also repeats on its own vertically (its period
-// is its own height, so there is never a seam). Each copy's position is wrapped,
-// so a photo leaving one side re-enters from the other while it is off-screen.
+// How the endless repeat works: the photos fill one rectangular "tile" that
+// repeats in both directions (each sideways repeat shifted half a tile down, so a
+// photo's twin is never level with it). Each copy's position is wrapped, so a
+// photo leaving one side re-enters from the other while it is off-screen.
 //
 // Touch: the section uses `touch-action: none`, so every drag on it moves the
 // photos (the page is scrolled by swiping above or below the section, which is
@@ -23,31 +22,35 @@ import { releaseVelocity, decayVelocity, wheelPixels } from './swipe.js';
 
 // The arrangement: same SEED = same layout on every visit. Change it to reshuffle.
 export const SEED = 20270403;
-// Column width ("u") = sqrt(section area) / DENSITY, kept between U_MIN and U_MAX px.
-// Lower DENSITY = bigger photos (fewer on screen). A phone shows about 2½ columns.
+// Photo unit ("u") = sqrt(section area) / DENSITY, kept between U_MIN and U_MAX px.
+// An average photo has about the area of a u × u square. Lower DENSITY = bigger
+// photos (fewer on screen). A phone shows about 2½ photos across.
 export const DENSITY = 3.3;
 export const U_MIN = 150;
 export const U_MAX = 300;
-// Photo width as a fraction of its column, and how far it may sit off the column
-// centre (fraction of a column). Together they set how much photos poke into the
-// next column (at most ~(WIDTH_MAX - 1) / 2 + X_JITTER of a column on each side).
-const WIDTH_MIN = 0.65;
-const WIDTH_MAX = 1.1;
-const X_JITTER = 0.1;
-// Vertical space between stacked photos, in columns: negative = overlap.
-const GAP_MIN = -0.1;
-const GAP_MAX = 0.06;
-// Depth: each column trails the drag by up to this many ms, then catches up.
+// Photo size (the square root of its area, in u), picked at random in this range.
+export const SIZE_MIN = 0.7;
+export const SIZE_MAX = 1.25;
+// How much photos may overlap: a strip this fraction of a photo's width (and
+// height) along each edge may sit under or over a neighbour. Larger = more overlap
+// and fewer gaps; the unit tests check every photo stays at least 60% visible.
+export const EDGE = 0.05;
+// Shape of the repeating tile (height / width): taller than wide, like a phone.
+const TILE_SHAPE = 1.45;
+// Stacking order: smaller photos mostly sit on top of bigger ones (so a big photo
+// loses only edge strips); this much randomness mixes it up a little.
+const Z_MIX = 0.15;
+// Depth: each photo trails the drag by up to this many ms, then catches up.
 const LAG_MAX_MS = 90;
 // Glide after a flick: speed decays with this time constant (ms), like the swipe video.
 const MOMENTUM_MS = 250;
 const MIN_SPEED = 0.02; // px/ms
-// One arrow-key press moves the field by this many columns.
+// One arrow-key press moves the field by this many u.
 const KEY_STEP = 0.5;
-// Each sideways repeat of the columns is shifted down by this fraction of a
-// column's height, so a repeated photo never sits level with its twin.
+// Each sideways repeat of the tile is shifted down by this fraction of its height,
+// so a repeated photo never sits level with its twin.
 export const COPY_SHIFT = 0.5;
-// Extra room (in columns) beyond a photo's edge before it wraps to the other side.
+// Extra room (in u) beyond a photo's edge before it wraps to the other side.
 const WRAP_PAD = 0.5;
 // Shape assumed for a photo whose size can't be read.
 const DEFAULT_ASPECT = 1.25; // height / width
@@ -65,59 +68,113 @@ export function mulberry32(seed) {
 }
 
 /**
- * How many columns the repeating tile has for `count` photos: about 7 photos per
- * column (20 → 3), so a column is taller than a phone screen and the same photo
- * doesn't show twice in one column on screen.
+ * Offset from point a to the nearest repeat of point b. Tile copy m across sits
+ * m tile widths right and m × shift down; copies down are a tile height apart.
  */
-export function columnCount(count) {
-  return Math.max(2, Math.round(count / 7));
+function nearestOffset(a, b, tileW, tileH, shift) {
+  let best = null;
+  for (let m = -1; m <= 1; m++) {
+    const dx = b.x + m * tileW - a.x;
+    let dy = b.y + m * shift - a.y;
+    dy -= Math.round(dy / tileH) * tileH;
+    if (!best || dx * dx + dy * dy < best.dx * best.dx + best.dy * best.dy) best = { dx, dy };
+  }
+  return best;
 }
 
 /**
- * Masonry layout, in units of one column width. `aspects[i]` is photo i's
- * height / width. Each photo goes to the currently shortest column, so columns
- * end up about equally tall.
- * @returns {{ cols:number, tileW:number,
- *   columns: {height:number, lag:number}[],
- *   items: {index:number, col:number, x:number, y:number, w:number, h:number, z:number}[] }}
- *   x, y are the photo's centre; a column's photos repeat every `height` vertically.
+ * Scattered layout, in units of u. `aspects[i]` is photo i's height / width.
+ * Photos start at random spots in a tile that is too small for them, then are
+ * pushed apart until only their edge strips (EDGE) overlap, the tile growing a
+ * little whenever they don't fit. That leaves them tightly packed in no pattern.
+ * @returns {{ tileW:number, tileH:number, shift:number,
+ *   items: {index:number, x:number, y:number, w:number, h:number, z:number, lag:number}[] }}
+ *   x, y are a photo's centre in the tile. The tile repeats every tileW across
+ *   (each copy `shift` further down) and every tileH down.
  */
 export function layoutField(aspects, seed = SEED) {
   const list = Array.isArray(aspects) ? aspects : [];
-  if (!list.length) return { cols: 0, tileW: 0, columns: [], items: [] };
+  if (!list.length) return { tileW: 0, tileH: 0, shift: 0, items: [] };
   const rand = mulberry32(seed);
-  const cols = Math.min(list.length, columnCount(list.length));
-  // Columns start at different heights (stagger), and each trails the drag differently.
-  const columns = Array.from({ length: cols }, () => {
-    const start = rand() * 0.6;
-    return { start, top: start, lag: rand() * LAG_MAX_MS, items: [] };
-  });
   const items = list.map((a, index) => {
     const aspect = a > 0 && Number.isFinite(a) ? a : DEFAULT_ASPECT;
-    const w = WIDTH_MIN + rand() * (WIDTH_MAX - WIDTH_MIN);
-    const h = w * aspect;
-    const col = columns.reduce((best, c, i) => (c.top < columns[best].top ? i : best), 0);
-    const c = columns[col];
-    const gap = GAP_MIN + rand() * (GAP_MAX - GAP_MIN);
-    const item = { index, col, x: col + 0.5 + (rand() * 2 - 1) * X_JITTER, y: c.top + h / 2, w, h, z: 0 };
-    c.top += h + gap;
-    c.items.push(item);
-    return item;
+    const size = SIZE_MIN + rand() * (SIZE_MAX - SIZE_MIN);
+    const w = size / Math.sqrt(aspect);
+    const h = size * Math.sqrt(aspect);
+    // cw, ch: the photo's core, which no other photo may cover
+    return { index, x: 0, y: 0, w, h, z: 0, lag: rand() * LAG_MAX_MS, cw: w * (1 - 2 * EDGE), ch: h * (1 - 2 * EDGE) };
   });
-  // A column repeats after its own stacked height (photos plus gaps), so the join
-  // between its last photo and the next copy of its first is just another gap.
-  const out = columns.map((c) => ({ height: c.top - c.start, lag: c.lag }));
-  // Stacking order: shuffled (fixed by the seed), like the reference.
-  const order = items.map((_, i) => i);
-  for (let i = order.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [order[i], order[j]] = [order[j], order[i]];
+  // Start with a tile only as big as the cores put together.
+  const coreArea = items.reduce((t, it) => t + it.cw * it.ch, 0);
+  let tileW = Math.sqrt(coreArea / TILE_SHAPE);
+  let tileH = tileW * TILE_SHAPE;
+  items.forEach((it) => { it.x = rand() * tileW; it.y = rand() * tileH; });
+  const GROW = 1.004;
+  for (let round = 0; round < 2000; round++) {
+    let worst = 0;
+    let stuck = null; // the smaller photo of the deepest overlap
+    for (let pass = 0; pass < 80; pass++) {
+      worst = 0;
+      const shift = COPY_SHIFT * tileH;
+      for (let a = 0; a < items.length; a++) {
+        for (let b = a + 1; b < items.length; b++) {
+          const i = items[a];
+          const j = items[b];
+          const { dx, dy } = nearestOffset(i, j, tileW, tileH, shift);
+          const ox = (i.cw + j.cw) / 2 - Math.abs(dx);
+          const oy = (i.ch + j.ch) / 2 - Math.abs(dy);
+          if (ox <= 0 || oy <= 0) continue;
+          if (Math.min(ox, oy) > worst) {
+            worst = Math.min(ox, oy);
+            stuck = i.cw * i.ch < j.cw * j.ch ? i : j;
+          }
+          // Push the two cores apart along the shorter overlap; the smaller photo moves more.
+          const ai = i.cw * i.ch;
+          const aj = j.cw * j.ch;
+          const ki = aj / (ai + aj);
+          const kj = ai / (ai + aj);
+          if (ox < oy) {
+            const sx = Math.sign(dx) || 1;
+            i.x -= sx * ox * ki;
+            j.x += sx * ox * kj;
+          } else {
+            const sy = Math.sign(dy) || 1;
+            i.y -= sy * oy * ki;
+            j.y += sy * oy * kj;
+          }
+        }
+      }
+      for (const it of items) { // back into the tile
+        const m = Math.floor(it.x / tileW);
+        it.x -= m * tileW;
+        it.y -= m * shift;
+        it.y -= Math.floor(it.y / tileH) * tileH;
+      }
+      if (worst < 1e-4) break;
+    }
+    if (worst < 1e-4) break;
+    // Still overlapping: a photo wedged between others can't be pushed free, so
+    // move it somewhere else, and make the tile a little bigger.
+    stuck.x = rand() * tileW;
+    stuck.y = rand() * tileH;
+    tileW *= GROW;
+    tileH *= GROW;
+    items.forEach((it) => { it.x *= GROW; it.y *= GROW; });
   }
-  order.forEach((idx, z) => { items[idx].z = z + 1; });
-  return { cols, tileW: cols, columns: out, items };
+  // Stacking: bigger photos lower, smaller ones on top, mixed up a little.
+  items
+    .map((it) => ({ it, k: it.w * it.h * (1 - Z_MIX + rand() * 2 * Z_MIX) }))
+    .sort((p, q) => q.k - p.k)
+    .forEach(({ it }, z) => { it.z = z + 1; });
+  return {
+    tileW,
+    tileH,
+    shift: COPY_SHIFT * tileH,
+    items: items.map(({ index, x, y, w, h, z, lag }) => ({ index, x, y, w, h, z, lag })),
+  };
 }
 
-/** Column width in px for a section of the given size. */
+/** Photo unit u in px for a section of the given size. */
 export function photoUnit(width, height) {
   const area = width * height;
   if (!(area > 0)) return U_MIN;
@@ -146,6 +203,24 @@ export function instancePosition(base, copy, span, offset, copies, margin) {
   return wrap(base + copy * span + offset, copies * span) - margin;
 }
 
+/**
+ * On-screen centre (px) of one copy of a photo. `cx`, `cy` say which copy
+ * (across, down), `offset` is the drag offset in u, `copies` how many tile copies
+ * there are each way and `margin` the wrap margins (px). A copy that wraps
+ * across becomes a different repeat of the tile, so its vertical position follows
+ * that repeat's shift (it happens off-screen, so nothing visibly jumps).
+ */
+export function tilePosition(item, cx, cy, layout, u, offset, copies, margin) {
+  const spanX = layout.tileW * u;
+  const periodX = copies.x * spanX;
+  const rawX = item.x * u + cx * spanX + offset.x * u;
+  const turns = Math.floor(rawX / periodX);
+  const across = cx - turns * copies.x; // which repeat of the tile this copy is showing
+  const spanY = layout.tileH * u;
+  const y = item.y * u + across * layout.shift * u + cy * spanY + offset.y * u;
+  return { x: rawX - turns * periodX - margin.x, y: wrap(y, copies.y * spanY) - margin.y };
+}
+
 /** Release speed {x, y} in px/ms from recent {t, x, y} pointer samples (0 if the finger had stopped). */
 export function releaseVelocity2D(samples, now) {
   return {
@@ -166,7 +241,7 @@ export function keyStep(key, u) {
   }
 }
 
-/** Fraction of the way a trailing column catches up in dt ms (0 lag = all the way). */
+/** Fraction of the way a trailing photo catches up in dt ms (0 lag = all the way). */
 export function catchUp(dt, lag) {
   if (!(lag > 0)) return 1;
   return 1 - Math.exp(-Math.max(0, dt) / lag);
@@ -213,12 +288,11 @@ export function initPhotoField({ photos, section = globalThis.document?.getEleme
 
   let list = [];
   let layout = layoutField([]);
-  // Drag offset in columns, so a resize/rotation keeps the field where it was.
+  // Drag offset in u, so a resize/rotation keeps the field where it was.
   const target = { x: 0, y: 0 };
-  let shown = []; // per column: where it is drawn now (trails `target` by its lag)
+  let shown = []; // per photo: where it is drawn now (trails `target` by its lag)
   let u = U_MIN;
-  let copiesX = 0;
-  let copiesY = []; // per column
+  let copies = { x: 0, y: 0 };
   let instances = []; // { img, item, cx, cy }
   let destroyed = false;
 
@@ -227,17 +301,19 @@ export function initPhotoField({ photos, section = globalThis.document?.getEleme
   section.append(layer);
 
   // How far outside the section a photo's centre may go before it wraps to the other
-  // side: half its size plus WRAP_PAD columns, so it wraps well out of view even
+  // side: half the biggest photo plus WRAP_PAD u, so it wraps well out of view even
   // during a fast flick (up to ~50px per frame).
-  const marginX = () => (WIDTH_MAX / 2 + X_JITTER + WRAP_PAD) * u;
-  const marginY = () => (Math.max(0, ...layout.items.map((it) => it.h)) / 2 + WRAP_PAD) * u;
+  const margins = () => ({
+    x: (Math.max(0, ...layout.items.map((it) => it.w)) / 2 + WRAP_PAD) * u,
+    y: (Math.max(0, ...layout.items.map((it) => it.h)) / 2 + WRAP_PAD) * u,
+  });
 
   const build = () => {
     layer.replaceChildren();
     instances = [];
-    for (let cx = 0; cx < copiesX; cx++) {
-      for (const item of layout.items) {
-        for (let cy = 0; cy < copiesY[item.col]; cy++) {
+    for (let cx = 0; cx < copies.x; cx++) {
+      for (let cy = 0; cy < copies.y; cy++) {
+        for (const item of layout.items) {
           const img = doc.createElement('img');
           img.className = 'photo-field-photo';
           img.src = list[item.index];
@@ -255,13 +331,9 @@ export function initPhotoField({ photos, section = globalThis.document?.getEleme
   };
 
   const render = () => {
-    const mx = marginX();
-    const my = marginY();
+    const margin = margins();
     for (const { img, item, cx, cy } of instances) {
-      const s = shown[item.col] || target;
-      const x = instancePosition(item.x * u, cx, layout.tileW * u, s.x * u, copiesX, mx);
-      const colH = layout.columns[item.col].height * u;
-      const y = instancePosition(item.y * u + cx * COPY_SHIFT * colH, cy, colH, s.y * u, copiesY[item.col], my);
+      const { x, y } = tilePosition(item, cx, cy, layout, u, shown[item.index] || target, copies, margin);
       img.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
     }
   };
@@ -271,18 +343,17 @@ export function initPhotoField({ photos, section = globalThis.document?.getEleme
     const w = section.clientWidth;
     const h = section.clientHeight;
     u = photoUnit(w, h);
-    const nextX = copiesNeeded(w, layout.tileW * u, marginX());
-    const nextY = layout.columns.map((c) => copiesNeeded(h, c.height * u, marginY()));
-    if (nextX !== copiesX || nextY.some((n, i) => n !== copiesY[i])) {
-      copiesX = nextX;
-      copiesY = nextY;
+    const margin = margins();
+    const next = { x: copiesNeeded(w, layout.tileW * u, margin.x), y: copiesNeeded(h, layout.tileH * u, margin.y) };
+    if (next.x !== copies.x || next.y !== copies.y) {
+      copies = next;
       build();
     }
     for (const { img, item } of instances) img.style.width = `${(item.w * u).toFixed(1)}px`;
     render();
   };
 
-  // ---- Animation: columns ease toward the drag target; flicks glide ----
+  // ---- Animation: photos ease toward the drag target; flicks glide ----
   let raf = 0;
   let lastT = 0;
   let coastV = null; // px/ms while gliding
@@ -298,8 +369,8 @@ export function initPhotoField({ photos, section = globalThis.document?.getEleme
       coastV = { x: decayVelocity(coastV.x, dt), y: decayVelocity(coastV.y, dt) };
       if (Math.hypot(coastV.x, coastV.y) < MIN_SPEED) coastV = null;
     }
-    layout.columns.forEach((c, i) => {
-      const k = reduced ? 1 : catchUp(dt, c.lag);
+    layout.items.forEach((it, i) => {
+      const k = reduced ? 1 : catchUp(dt, it.lag);
       shown[i].x += (target.x - shown[i].x) * k;
       shown[i].y += (target.y - shown[i].y) * k;
     });
@@ -389,7 +460,7 @@ export function initPhotoField({ photos, section = globalThis.document?.getEleme
       const ok = all.map((src, i) => ({ src, a: aspects[i] })).filter((p) => Number.isFinite(p.a));
       list = ok.map((p) => p.src);
       layout = layoutField(ok.map((p) => p.a));
-      shown = layout.columns.map(() => ({ x: target.x, y: target.y }));
+      shown = layout.items.map(() => ({ x: target.x, y: target.y }));
       measure();
     });
 
