@@ -18,11 +18,18 @@ The landing page SHALL show the photo field section directly below the swipe vid
 - **THEN** the gallery teaser appears directly below the photo field
 
 ### Requirement: Scattered photos with no overlay
-The section SHALL show the configured photos scattered loosely at varied sizes over the site's page background colour. Each photo SHALL keep its own aspect ratio (no cropping) and have no added frame, border, caption, heading or wordmark.
+The section SHALL show the configured photos at varied sizes in loose, staggered columns over the page background. Each photo SHALL keep its own aspect ratio (no cropping) and have no added frame, border, caption, heading or wordmark.
 
 #### Scenario: Viewing the section
 - **WHEN** the section is on screen
 - **THEN** only photos of different sizes on the page background are visible, each shown uncropped in its original proportions
+
+### Requirement: Densely filled, with overlapped photos still visible
+The photos SHALL cover most of the section (roughly 80–95% of its area), leaving only narrow strips of background and no large empty areas. Photos MAY overlap, but every photo SHALL remain at least 60% visible, and the same photo SHALL NOT appear twice in one column on a phone screen.
+
+#### Scenario: Phone screen
+- **WHEN** a visitor on a phone looks at the section at any drag position
+- **THEN** it is mostly filled with photos, no photo is mostly hidden behind another, and no photo shows twice in the same column
 
 ### Requirement: Section height leaves room to scroll
 The section SHALL be full-bleed and shorter than the screen (about three quarters of the visible screen height), so that on any screen part of the page above or below it is always visible while it is centred.
@@ -65,11 +72,11 @@ When a drag is released while still moving, the field SHALL keep moving in the s
 - **THEN** it stops where it is
 
 ### Requirement: Subtle depth effect
-Photos SHALL move by slightly different amounts for the same drag, so the field feels layered. The difference SHALL stay small enough that the scattered arrangement stays readable and photos do not visibly swap positions during a normal drag.
+While the field is moving, groups of photos SHALL trail the drag by slightly different amounts, so the field feels layered. When movement stops, every photo SHALL settle back into its place in the layout, so the arrangement does not drift however long the field is dragged.
 
 #### Scenario: Dragging the field
-- **WHEN** a visitor drags the field one screen-width
-- **THEN** all photos move in the drag direction, some slightly more than others
+- **WHEN** a visitor drags the field and stops
+- **THEN** during the drag some photos lag slightly behind others, and once stopped the layout is exactly as before, just moved
 
 ### Requirement: Every screen size
 The section SHALL work on phones, tablets and desktops in any orientation. Photo sizes SHALL scale with the screen so that a phone and a desktop show a comparably dense field, and resizing or rotating the screen SHALL keep the field filled with no gaps.
@@ -105,7 +112,7 @@ For visitors with `prefers-reduced-motion: reduce`, the field SHALL still follow
 
 #### Scenario: Reduced motion flick
 - **WHEN** a visitor with reduced motion enabled flicks the field
-- **THEN** it stops as soon as they let go, and all photos move together by the same amount
+- **THEN** it stops as soon as they let go, and all photos move together with no lag
 
 ### Requirement: Replaceable placeholder photos
 Until Rae supplies real photos, the section SHALL use about 20 numbered placeholder images in a mix of portrait, landscape and square shapes. Replacing a placeholder file with a photo of the same name SHALL show that photo with no code change, whatever its shape. Changing the number of photos SHALL need only an edit to the site's settings.
@@ -116,4 +123,4 @@ Until Rae supplies real photos, the section SHALL use about 20 numbered placehol
 
 #### Scenario: A photo fails to load
 - **WHEN** one configured photo is missing or fails to load
-- **THEN** the field still works and shows the remaining photos without a broken-image icon
+- **THEN** the field still works and lays out the remaining photos with no gap or broken-image icon

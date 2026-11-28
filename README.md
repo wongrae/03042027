@@ -86,7 +86,7 @@ ffmpeg -i site/video/swipe.mp4 -frames:v 1 -q:v 4 site/img/swipe-still.jpg
 
 ## Photo field (below the swipe video)
 
-The section under the swipe video is a scattered wall of photos that guests drag around in any direction, with a finger or a mouse. It repeats endlessly, keeps gliding briefly after a flick, and photos move at slightly different speeds for a sense of depth. It is about three quarters of the screen tall, so guests can always scroll the page by swiping just above or below it. A mouse wheel scrolls the page as usual. A sideways trackpad swipe, or the arrow keys (after clicking or tabbing to it), also move the photos.
+The section under the swipe video is a dense wall of photos in staggered columns (modelled on afterduskmedia.com) that guests drag around in any direction, with a finger or a mouse. It repeats endlessly, keeps gliding briefly after a flick, and the columns trail the drag by slightly different amounts for a sense of depth (settling back into place when it stops). It is about three quarters of the screen tall, so guests can always scroll the page by swiping just above or below it. A mouse wheel scrolls the page as usual. A sideways trackpad swipe, or the arrow keys (after clicking or tabbing to it), also move the photos.
 
 The photos are currently **placeholders**: `site/img/photo-field/01.jpg` … `20.jpg`, listed in `photoField` in `site/js/config.js`.
 
@@ -98,7 +98,7 @@ The photos are currently **placeholders**: `site/img/photo-field/01.jpg` … `20
   FFMPEG="C:/Users/WongR/ffmpeg-portable/ffmpeg-9.0.2-essentials_build/bin/ffmpeg.exe" node scripts/gen-photo-field-placeholders.mjs
   ```
 
-Tuning, in `site/js/photo-field.js`: `SEED` (change it to get a different arrangement), `DENSITY`, `U_MIN` and `U_MAX` (photo size: a lower `DENSITY` means bigger photos), `CELL` (spacing between photos), `DEPTH_SPREAD` (strength of the depth effect) and `MOMENTUM_MS` (how far a flick glides). The section height (`75svh`) is in `.photo-field-shell` in `site/css/base.css`. Reduced-motion visitors can still drag, but get no glide or depth effect.
+Tuning, in `site/js/photo-field.js`: `SEED` (change it to get a different arrangement); `DENSITY`, `U_MIN` and `U_MAX` (column width: a lower `DENSITY` means bigger photos); `WIDTH_MIN` and `WIDTH_MAX` (photo width as a fraction of a column); `X_JITTER` (how far photos poke into the next column); `GAP_MIN` and `GAP_MAX` (overlap or gap between stacked photos; negative means overlap); `LAG_MAX_MS` (strength of the depth effect); and `MOMENTUM_MS` (how far a flick glides). `tests/photo-field.test.mjs` checks that the field stays densely filled and that every photo stays at least 60% visible, so run `npm test` after changing any of these. The section height (`75svh`) is in `.photo-field-shell` in `site/css/base.css`. Reduced-motion visitors can still drag, but get no glide or depth effect.
 
 ## Deploying (GitHub Pages)
 
