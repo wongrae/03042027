@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  mulberry32, layoutField, photoUnit, copiesNeeded, wrap, instancePosition, tilePosition,
-  releaseVelocity2D, keyStep, catchUp, initPhotoField, U_MIN, U_MAX, COPY_SHIFT, EDGE, SIZE_MIN, SIZE_MAX,
+  mulberry32, layoutField, blockSlots, BLOCK, photoUnit, copiesNeeded, wrap, instancePosition, tilePosition,
+  releaseVelocity2D, keyStep, catchUp, initPhotoField, U_MIN, U_MAX,
 } from '../site/js/photo-field.js';
 
-// The placeholder mix: portrait 4:5, landscape 3:2, square.
-const SHAPES = 'plspslpplspslplspslp'.split('').map((c) => ({ p: 1.25, l: 2 / 3, s: 1 })[c]);
+// The placeholder shapes, made to match the block's slots: tall 2:3, portrait ~5:6, landscape ~5:4.
+const SHAPES = 'TPLTPPTTPLPTPLTPPTTP'.split('').map((c) => ({ T: 1.5, P: 774 / 640, L: 648 / 800 })[c]);
 
 // ---------- layout ----------
 
@@ -20,70 +20,74 @@ test('the same seed and shapes always give the same layout, a different seed a d
   }
 });
 
-test('every photo keeps its own shape, gets a size in range, a unique stacking order and a small lag', () => {
+test('the block is the afterdusk phone layout: 11 slots in a 400 × 800 frame', () => {
+  const slots = blockSlots();
+  assert.equal(slots.length, 11);
+  assert.equal(BLOCK.w, 400);
+  assert.equal(BLOCK.h, 800);
+  slots.forEach((s, i) => {
+    const [left, top, w, h] = BLOCK.slots[i];
+    assert.ok(Math.abs(s.w * BLOCK.unit - w) < 1e-9 && Math.abs(s.h * BLOCK.unit - h) < 1e-9, 'measured size kept');
+    const cx = (((left + w / 2) % 400) + 400) % 400, cy = (((top + h / 2) % 800) + 800) % 800;
+    assert.ok(Math.abs(s.x * BLOCK.unit - cx) < 1e-9 && Math.abs(s.y * BLOCK.unit - cy) < 1e-9, 'measured position kept');
+  });
+  assert.deepEqual(BLOCK.slots.map((s) => s[4]).sort((a, b) => a - b), slots.map((_, i) => i + 1)); // unique layers
+});
+
+test('20 photos fill two blocks exactly, with 2 photos shown a second time in the other block', () => {
   const l = layoutField(SHAPES);
-  assert.equal(l.items.length, 20);
-  assert.ok(l.tileW > 0 && l.tileH > l.tileW, 'the tile is taller than wide');
-  assert.equal(l.shift, l.tileH * COPY_SHIFT);
+  assert.equal(l.blocks, 2);
+  assert.equal(l.items.length, 22);
+  assert.ok(Math.abs(l.tileW - 400 / BLOCK.unit) < 1e-9 && Math.abs(l.tileH - 1600 / BLOCK.unit) < 1e-9);
+  assert.ok(Math.abs(l.shift - 800 / BLOCK.unit) < 1e-9, 'sideways repeats are one block lower');
+  const slots = blockSlots();
   l.items.forEach((it) => {
-    assert.ok(Math.abs(it.h / it.w - SHAPES[it.index]) < 1e-9, 'shape kept');
-    const size = Math.sqrt(it.w * it.h);
-    assert.ok(size >= SIZE_MIN - 1e-9 && size <= SIZE_MAX + 1e-9, `size ${size}`);
-    assert.ok(it.x >= 0 && it.x < l.tileW && it.y >= 0 && it.y < l.tileH, 'centre inside the tile');
+    // placeholders are made in the slot shapes, so each fills its slot exactly
+    const s = slots[it.slot];
+    assert.ok(Math.abs(it.w - s.w) < 0.01 && Math.abs(it.h - s.h) < 0.01, `photo ${it.index} fills slot ${it.slot}`);
+    assert.ok(Math.abs(it.x - s.x) < 1e-9 && Math.abs(it.y - (s.y + it.block * 800 / BLOCK.unit)) < 1e-9);
     assert.ok(it.lag >= 0 && it.lag <= 90);
   });
-  assert.deepEqual(l.items.map((it) => it.z).sort((a, b) => a - b), l.items.map((_, i) => i + 1));
+  assert.deepEqual([...new Set(l.items.map((it) => it.index))].sort((a, b) => a - b), SHAPES.map((_, i) => i));
+  const repeats = l.items.filter((it) => it.repeat);
+  assert.equal(repeats.length, 2);
+  for (const r of repeats) {
+    const twin = l.items.find((it) => it.index === r.index && !it.repeat);
+    assert.notEqual(twin.block, r.block, 'a repeated photo is in the other block');
+  }
+  assert.deepEqual(l.items.map((it) => it.z).sort((a, b) => a - b), l.items.map((_, i) => i + 1)); // unique stacking order
+  assert.deepEqual(l.items.map((it) => it.key), l.items.map((_, i) => i));
+});
+
+test('a photo of a different shape keeps its own shape, at its slot\'s area and centre, in the closest-shaped slot', () => {
+  const shapes = SHAPES.slice();
+  shapes[0] = 0.5; // a wide panorama instead of a tall photo
+  const l = layoutField(shapes);
+  const slots = blockSlots();
+  const it = l.items.find((i) => i.index === 0);
+  assert.ok(Math.abs(it.h / it.w - 0.5) < 1e-9, 'shape kept');
+  const s = slots[it.slot];
+  assert.ok(Math.abs(it.w * it.h - s.w * s.h) < 1e-9, 'same area as its slot');
+  assert.ok(s.aspect < 1, 'placed in a landscape slot');
 });
 
 // Every repeat of every photo near the tile (copy m across sits m tile widths right and m × shift down).
-function repeats(l, reach = 2) {
+function repeats(l, reach = 3) {
   const out = [];
   for (const it of l.items) {
     for (let m = -reach; m <= reach; m++) {
-      for (let n = -reach - 2; n <= reach + 2; n++) {
-        out.push({ it, m, n, x: it.x + m * l.tileW, y: it.y + m * l.shift + n * l.tileH });
+      for (let n = -reach; n <= reach; n++) {
+        out.push({ it, x: it.x + m * l.tileW, y: it.y + m * l.shift + n * l.tileH });
       }
     }
   }
   return out;
 }
 
-test('photos are scattered, not lined up in columns or rows', () => {
-  for (const seed of [20270403, 1, 2, 3, 4]) {
-    const l = layoutField(SHAPES, seed);
-    // In a column layout many photos share (nearly) the same left edge or centre; here few do.
-    for (const key of ['x', 'y']) {
-      const v = l.items.map((it) => it[key]).sort((a, b) => a - b);
-      let most = 1;
-      for (let i = 0; i < v.length; i++) most = Math.max(most, v.filter((w) => w >= v[i] && w < v[i] + 0.1).length);
-      assert.ok(most <= 4, `seed ${seed}: ${most} photos line up on ${key}`);
-    }
-  }
-});
-
-test('photos overlap only at their edges, including across the repeat seams', () => {
-  for (const seed of [20270403, 1, 2, 3, 4]) {
-    const l = layoutField(SHAPES, seed);
-    const all = repeats(l, 1);
-    for (const a of l.items) {
-      for (const b of all) {
-        if (b.it === a && b.m === 0 && b.n === 0) continue;
-        const ox = (a.w + b.it.w) / 2 - Math.abs(b.x - a.x);
-        const oy = (a.h + b.it.h) / 2 - Math.abs(b.y - a.y);
-        if (ox <= 0 || oy <= 0) continue;
-        // the overlap is no deeper than the two edge strips put together, in at least one direction
-        const okX = ox <= EDGE * (a.w + b.it.w) + 1e-3;
-        const okY = oy <= EDGE * (a.h + b.it.h) + 1e-3;
-        assert.ok(okX || okY, `seed ${seed}: photos ${a.index} and ${b.it.index} overlap by ${ox.toFixed(2)} × ${oy.toFixed(2)}`);
-      }
-    }
-  }
-});
-
 // Samples the repeating layout on a grid: how much area is covered, and how much of each photo is visible.
-function coverage(l, RW = 6, RH = 6, step = 0.04) {
-  const rects = repeats(l, 3)
-    .map((r) => ({ r, z: r.it.z, x0: r.x - r.it.w / 2, x1: r.x + r.it.w / 2, y0: r.y - r.it.h / 2, y1: r.y + r.it.h / 2 }))
+function coverage(l, RW = 6, RH = 10, step = 0.04) {
+  const rects = repeats(l)
+    .map((r) => ({ z: r.it.z, x0: r.x - r.it.w / 2, x1: r.x + r.it.w / 2, y0: r.y - r.it.h / 2, y1: r.y + r.it.h / 2 }))
     .filter((q) => q.x1 > 0 && q.x0 < RW && q.y1 > 0 && q.y0 < RH);
   let covered = 0, total = 0;
   const area = new Map(), vis = new Map();
@@ -103,24 +107,21 @@ function coverage(l, RW = 6, RH = 6, step = 0.04) {
   return { covered: covered / total, minVisible: Math.min(...inside.map((q) => (vis.get(q) || 0) / area.get(q))) };
 }
 
-test('the field is densely filled, and overlapped photos stay mostly visible', () => {
-  for (const seed of [20270403, 1, 2, 3, 4]) {
-    const { covered, minVisible } = coverage(layoutField(SHAPES, seed));
-    assert.ok(covered > 0.8 && covered < 0.93, `seed ${seed}: ${Math.round(covered * 100)}% covered`);
-    assert.ok(minVisible >= 0.6, `seed ${seed}: a photo is only ${Math.round(minVisible * 100)}% visible`);
-  }
+test('the field is filled like afterdusk (about 92%), and no photo is mostly hidden', () => {
+  const { covered, minVisible } = coverage(layoutField(SHAPES));
+  assert.ok(covered > 0.9 && covered < 0.95, `${Math.round(covered * 100)}% covered`);
+  assert.ok(minVisible >= 0.4, `a photo is only ${Math.round(minVisible * 100)}% visible`);
 });
 
-test('other photo counts still lay out (1 to 40), and an empty list gives an empty layout', () => {
-  for (const n of [1, 2, 5, 10, 30, 40]) {
+test('other photo counts use one block per 11 photos, showing every photo', () => {
+  for (const n of [1, 2, 10, 11, 12, 30, 40]) {
     const l = layoutField(Array.from({ length: n }, (_, i) => SHAPES[i % 20]));
-    assert.equal(l.items.length, n);
-    assert.ok(l.tileW > 0 && l.tileH > 0);
-    if (n >= 10) {
-      const { covered, minVisible } = coverage(l);
-      assert.ok(covered > 0.75, `${n} photos: ${Math.round(covered * 100)}% covered`);
-      assert.ok(minVisible >= 0.6, `${n} photos: a photo is only ${Math.round(minVisible * 100)}% visible`);
-    }
+    const blocks = Math.ceil(n / 11);
+    assert.equal(l.blocks, blocks);
+    assert.equal(l.items.length, blocks * 11);
+    assert.equal(new Set(l.items.map((it) => it.index)).size, n);
+    assert.equal(l.items.filter((it) => !it.repeat).length, n);
+    assert.equal(l.shift, blocks > 1 ? 800 / BLOCK.unit : 0);
   }
   assert.equal(layoutField([]).items.length, 0);
   assert.equal(layoutField(null).items.length, 0);
@@ -131,9 +132,10 @@ test('other photo counts still lay out (1 to 40), and an empty list gives an emp
 // ---------- sizing and wrapping ----------
 
 test('the photo unit scales with the screen and is clamped at both ends', () => {
-  assert.equal(photoUnit(375, 500), U_MIN); // phone: ~131 → 150, so about 2½ photos across
-  const ref = photoUnit(400, 800);
-  assert.ok(ref > 165 && ref < 180, `400×800 unit = ${ref}`); // afterdusk's ~170px photos
+  const phone = photoUnit(375, 500);
+  const blockW = (400 / BLOCK.unit) * phone;
+  assert.ok(Math.abs(blockW - 375) < 20, `on a phone the block is ${Math.round(blockW)}px wide`); // as wide as the screen, like afterdusk
+  assert.equal(photoUnit(300, 300), U_MIN);
   assert.equal(photoUnit(1920, 810), U_MAX);
   assert.equal(photoUnit(0, 600), U_MIN);
   assert.equal(photoUnit(NaN, NaN), U_MIN);
@@ -388,15 +390,15 @@ test('photos trail the drag by different amounts, then all settle back into the 
   page.flush();
   const imgs = page.photos();
   const before = imgs.map(xy);
-  page.section.dispatch('keydown', { key: 'ArrowLeft' }); // moves the field 75px left (half a 150px unit)
+  page.section.dispatch('keydown', { key: 'ArrowLeft' }); // moves the field half a photo unit left
   page.flush(1); // one frame in: photos have moved different fractions of the way
   const mid = new Set(imgs.map((img, i) => (before[i][0] - xy(img)[0]).toFixed(1)));
   assert.ok(mid.size > 1, 'photos moved by different amounts mid-motion');
   page.flush();
   imgs.forEach((img, i) => {
     const d = before[i][0] - xy(img)[0];
-    // every photo ends exactly 75px left, unless that copy wrapped around to the other side
-    assert.ok(Math.abs(d - 75) < 0.2 || Math.abs(d) > 300, `photo ${i} moved ${d}`);
+    // every photo ends exactly half a unit left, unless that copy wrapped around to the other side
+    assert.ok(Math.abs(d - photoUnit(400, 600) / 2) < 0.2 || Math.abs(d) > 300, `photo ${i} moved ${d}`);
   });
 });
 

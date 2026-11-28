@@ -86,19 +86,24 @@ ffmpeg -i site/video/swipe.mp4 -frames:v 1 -q:v 4 site/img/swipe-still.jpg
 
 ## Photo field (below the swipe video)
 
-The section under the swipe video is a dense, freely scattered wall of photos (modelled on afterduskmedia.com) that guests drag around in any direction, with a finger or a mouse. It repeats endlessly, keeps gliding briefly after a flick, and the photos trail the drag by slightly different amounts for a sense of depth (settling back into place when it stops). It is about three quarters of the screen tall, so guests can always scroll the page by swiping just above or below it. A mouse wheel scrolls the page as usual. A sideways trackpad swipe, or the arrow keys (after clicking or tabbing to it), also move the photos.
+The section under the swipe video is a wall of photos copied from the phone layout of afterduskmedia.com that guests drag around in any direction, with a finger or a mouse. It repeats endlessly, keeps gliding briefly after a flick, and the photos trail the drag by slightly different amounts for a sense of depth (settling back into place when it stops). It is about three quarters of the screen tall, so guests can always scroll the page by swiping just above or below it. A mouse wheel scrolls the page as usual. A sideways trackpad swipe, or the arrow keys (after clicking or tabbing to it), also move the photos.
 
 The photos are currently **placeholders**: `site/img/photo-field/01.jpg` … `20.jpg`, listed in `photoField` in `site/js/config.js`.
 
-- **Swap a photo:** replace a file with a real photo of the **same name** (e.g. save it as `site/img/photo-field/07.jpg`). Any shape works (portrait, landscape, square), and it is shown uncropped, so a photo with its own Polaroid-style border is fine. Resize to about **1200px on the long side** and save as JPEG first. Phone photos straight off the camera are several MB each.
-- **More or fewer photos:** add or remove lines in `photoField` (e.g. add `'./img/photo-field/21.jpg'`). The layout re-arranges itself for the new count. An empty list hides the section.
+- **Swap a photo:** replace a file with a real photo of the **same name** (e.g. save it as `site/img/photo-field/07.jpg`). Resize to about **1200px on the long side** and save as JPEG first. Phone photos straight off the camera are several MB each. Photos are never cropped (so a Polaroid-style border is fine), and each goes to the slot closest to its shape. For the layout to match afterdusk exactly, crop each photo to the shape of the placeholder it replaces:
+  - **Tall 2:3** (e.g. 800 × 1200): 01, 04, 07, 08, 12, 15, 18, 19
+  - **Portrait 5:6** (e.g. 1000 × 1200): 02, 05, 06, 09, 11, 13, 16, 17, 20
+  - **Landscape 5:4** (e.g. 1200 × 960): 03, 10, 14
+
+  Other shapes work too, but then gaps and overlaps shift a little from the original.
+- **More or fewer photos:** add or remove lines in `photoField` (e.g. add `'./img/photo-field/21.jpg'`). Every 11 photos fill one copy of the arrangement, and spare slots show a second copy of another photo (so 22 photos fill two copies exactly). An empty list hides the section.
 - **Remake the placeholders** (overwrites files of the same name, so move real photos out first):
 
   ```bash
   FFMPEG="C:/Users/WongR/ffmpeg-portable/ffmpeg-9.0.2-essentials_build/bin/ffmpeg.exe" node scripts/gen-photo-field-placeholders.mjs
   ```
 
-Tuning, in `site/js/photo-field.js`: `SEED` (change it to get a different arrangement); `DENSITY`, `U_MIN` and `U_MAX` (overall photo size: a lower `DENSITY` means bigger photos); `SIZE_MIN` and `SIZE_MAX` (how much photo sizes vary); `EDGE` (how much photos may overlap at their edges: higher means more overlap and fewer gaps); `SPREAD` (how far the packed photos are pulled apart: higher means more gaps and less overlap, 1 means tightly packed); `LAG_MAX_MS` (strength of the depth effect); and `MOMENTUM_MS` (how far a flick glides). `tests/photo-field.test.mjs` checks that the field stays densely filled, unstructured, and that every photo stays at least 60% visible, so run `npm test` after changing any of these. The section height (`75svh`) is in `.photo-field-shell` in `site/css/base.css`. Reduced-motion visitors can still drag, but get no glide or depth effect.
+Tuning, in `site/js/photo-field.js`: `BLOCK` (the arrangement: each slot's position, size and stacking layer, in px of afterdusk's 400 × 800 phone frame); `DENSITY`, `U_MIN` and `U_MAX` (overall size: a lower `DENSITY` means bigger photos); `LAG_MAX_MS` (strength of the depth effect); and `MOMENTUM_MS` (how far a flick glides). `tests/photo-field.test.mjs` checks the arrangement, how full it is, and that every photo stays at least 40% visible, so run `npm test` after changing any of these. The section height (`75svh`) is in `.photo-field-shell` in `site/css/base.css`. Reduced-motion visitors can still drag, but get no glide or depth effect.
 
 ## Deploying (GitHub Pages)
 

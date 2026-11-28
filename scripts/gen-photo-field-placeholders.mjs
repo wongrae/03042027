@@ -1,6 +1,6 @@
 // Generates the numbered placeholder photos for the drag-around photo field:
-// site/img/photo-field/01.jpg … 20.jpg, in a mix of portrait, landscape and
-// square shapes, using ffmpeg (no other dependencies).
+// site/img/photo-field/01.jpg … 20.jpg, in the three shapes of the photo-field
+// block (tall 2:3, portrait ~5:6, landscape ~5:4), using ffmpeg (no other dependencies).
 //
 // Usage:  node scripts/gen-photo-field-placeholders.mjs
 //         FFMPEG="C:/Users/WongR/ffmpeg-portable/ffmpeg-9.0.2-essentials_build/bin/ffmpeg.exe" node scripts/gen-photo-field-placeholders.mjs
@@ -24,12 +24,11 @@ const palettes = [
   ['B88A6B', '6B4A3C'], // deep
   ['D9C7B8', '8F8275'], // muted
 ];
-// 8 portrait (4:5), 6 landscape (3:2), 6 square, interleaved.
-const shapes = { portrait: [640, 800], landscape: [800, 534], square: [720, 720] };
-const order = [
-  'portrait', 'landscape', 'square', 'portrait', 'square', 'landscape', 'portrait', 'portrait', 'landscape', 'square',
-  'portrait', 'square', 'landscape', 'portrait', 'landscape', 'square', 'portrait', 'square', 'landscape', 'portrait',
-];
+// The shapes of the block's 11 slots, in slot order (see BLOCK in site/js/photo-field.js),
+// so placeholder n fills slot (n - 1) % 11 exactly: 8 tall, 9 portrait, 3 landscape.
+const shapes = { tall: [600, 900], portrait: [640, 774], landscape: [800, 648] };
+const slotShapes = ['tall', 'portrait', 'landscape', 'tall', 'portrait', 'portrait', 'tall', 'tall', 'portrait', 'landscape', 'portrait'];
+const order = Array.from({ length: 20 }, (_, i) => slotShapes[i % slotShapes.length]);
 
 const fontCandidates = ['C:/Windows/Fonts/georgia.ttf', '/System/Library/Fonts/Supplemental/Georgia.ttf', '/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf'];
 const font = fontCandidates.find((f) => existsSync(f));

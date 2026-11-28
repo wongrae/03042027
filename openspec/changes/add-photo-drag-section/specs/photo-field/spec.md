@@ -17,19 +17,19 @@ The landing page SHALL show the photo field section directly below the swipe vid
 - **WHEN** a visitor opens the landing page in Phase 3
 - **THEN** the gallery teaser appears directly below the photo field
 
-### Requirement: Scattered photos with no overlay
-The section SHALL show the configured photos at varied sizes, scattered freely over the page background with no visible rows or columns. Each photo SHALL keep its own aspect ratio (no cropping) and have no added frame, border, caption, heading or wordmark.
+### Requirement: Afterdusk's arrangement, with no overlay
+The section SHALL arrange the photos in the same composition as the narrow-screen field of afterduskmedia.com: its block of 11 photo slots, with their measured positions, sizes, gaps and overlaps, repeated once per 11 photos. Each photo SHALL keep its own aspect ratio (no cropping) and have no added frame, border, caption, heading or wordmark.
 
-#### Scenario: Viewing the section
-- **WHEN** the section is on screen
-- **THEN** only photos of different sizes on the page background are visible, in no grid or column pattern, each shown uncropped in its original proportions
+#### Scenario: Viewing the section on a phone
+- **WHEN** the section is on screen on a phone, with the placeholder photos
+- **THEN** it shows the same arrangement as the afterdusk phone layout, at about the same size relative to the screen, with only photos on the page background, each uncropped
 
 ### Requirement: Densely filled, with overlapped photos still visible
-The photos SHALL cover most of the section (roughly 80–92% of its area), leaving narrow gaps of background between photos but no large empty areas. Photos MAY overlap at their edges, but every photo SHALL remain at least 60% visible, and a phone screen SHALL NOT show the same photo twice.
+The photos SHALL cover about as much of the section as the reference (about 92% with photos shaped like their slots), and every photo SHALL remain at least 40% visible where photos overlap. A photo SHALL NOT appear twice on a phone screen when there are at least 12 photos.
 
 #### Scenario: Phone screen
 - **WHEN** a visitor on a phone looks at the section at any drag position
-- **THEN** it is mostly filled with photos, no photo is mostly hidden behind another, and no photo shows twice
+- **THEN** it is filled like the reference, no photo is mostly hidden behind another, and no photo shows twice
 
 ### Requirement: Section height leaves room to scroll
 The section SHALL be full-bleed and shorter than the screen (about three quarters of the visible screen height), so that on any screen part of the page above or below it is always visible while it is centred.
@@ -115,7 +115,7 @@ For visitors with `prefers-reduced-motion: reduce`, the field SHALL still follow
 - **THEN** it stops as soon as they let go, and all photos move together with no lag
 
 ### Requirement: Replaceable placeholder photos
-Until Rae supplies real photos, the section SHALL use about 20 numbered placeholder images in a mix of portrait, landscape and square shapes. Replacing a placeholder file with a photo of the same name SHALL show that photo with no code change, whatever its shape. Changing the number of photos SHALL need only an edit to the site's settings.
+Until Rae supplies real photos, the section SHALL use about 20 numbered placeholder images in the shapes of the arrangement's slots. Replacing a placeholder file with a photo of the same name SHALL show that photo with no code change, whatever its shape. Changing the number of photos SHALL need only an edit to the site's settings.
 
 #### Scenario: Swapping a photo
 - **WHEN** Rae replaces placeholder `07` with a landscape photo of the same file name and redeploys

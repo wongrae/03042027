@@ -26,23 +26,25 @@ Its narrow layout, measured again in a 400 × 800 frame after Rae found the firs
 Each photo instance is an absolutely positioned `<img>` at the section's top-left, placed with `transform: translate3d(x, y, 0)` (`will-change: transform`). A single `requestAnimationFrame` loop runs only while a drag or glide is active. When the field is idle nothing runs, so there's no need for an IntersectionObserver pause.
 - *Alternative:* `<canvas>` drawing. It's faster with hundreds of images, but it's overkill for 20–80. It loses native image decoding, alt and accessibility, and makes it harder for photos to keep their own aspect ratio. Rejected.
 
-### 2. Layout: freely scattered, packed so only edges overlap, in "photo units"
-(Revised twice after Rae's reviews. The original jittered grid left big holes and let some photos pile up, and the masonry columns that replaced it looked too structured.)
+### 2. Layout: afterdusk's own block, copied one to one
+(Revised three times after Rae's reviews: a jittered grid left holes and piles; masonry columns looked too structured; a computer-packed scatter looked crowded and its gaps and overlaps felt accidental. Rae asked for the reference copied one to one.)
 
-A pure `layoutField(aspects, seed)` takes each photo's real shape (height / width) and returns everything in units of `u` (an average photo has about the area of a u × u square):
-- **Sizes:** each photo's size (square root of its area) is `0.7–1.25u`, so landscape, portrait and square photos look equally weighty.
-- **Packing:** each photo has a "core", the photo minus an `EDGE` strip (5% of its width and height) on every side. Photos start at random spots in a repeating tile that is too small for them. Overlapping cores are pushed apart (along the shorter overlap, the smaller photo moving more) until no two cores overlap, so photos only ever overlap by their edge strips. Whenever they don't yet fit, the tile grows by 0.4% and the photo wedged deepest is moved to a random spot, which stops a jammed start from leaving big holes. The result is tightly packed in no particular pattern: no rows, no columns. Finally the whole layout is spread out by `SPREAD` (1.08), which opens narrow gaps of background between many photos while keeping some edge overlaps (Rae asked for more gaps after seeing it packed at about 93%).
-- **Tile:** taller than wide (height = 1.45 × width), about 3.5u × 5u for 20 photos, so a phone never shows the same photo twice.
-- **Stacking order:** smaller photos mostly on top of bigger ones (so a big photo loses only edge strips), lightly shuffled.
+`BLOCK` holds the reference's narrow-screen block exactly as measured: 11 slots in a 400 × 800 frame, each with its left, top, width and height, so its deliberate gaps and overlaps are reproduced. Only the stacking order differs: on the reference two slots are 85% hidden behind a neighbour, so the layers were reordered (positions untouched) until every slot shows at least about 46%. The block is drawn at `u / 171` times its measured size (171 is the reference frame's `u`).
 
-All randomness comes from a seeded PRNG (mulberry32) with a fixed `SEED`, so the arrangement is the same on every visit and testable. Packing 20 photos takes about 15ms (once, when the section is near). The settings were tuned with a sampling script against the reference over 12 seeds: about 83–90% of the area is covered (the reference covers 92%), and every photo stays at least about 85% visible (the unit test requires at least 60%). The reference's worst photo shows only 15%.
+A pure `layoutField(aspects, seed)` fills it:
+- **Blocks:** one block per 11 photos, stacked downwards (20 photos = 2 blocks, 22 slots). The tile is one block wide and `blocks` blocks tall.
+- **Matching:** photos go to the slots closest to their shape (the k-th tallest photo to the k-th tallest slot). A photo keeps its own shape at its slot's centre and area, so a photo shaped like its slot fills it exactly, and other shapes stay close.
+- **Spare slots** at the end of the last block show a second copy of the closest-shaped photo from another block (2 for 20 photos), `aria-hidden` like other copies.
+- **Seed:** only the small per-photo depth lag is random (seeded mulberry32); the arrangement itself is fixed.
+
+The placeholders are made in the three slot shapes (tall 2:3, portrait ~5:6, landscape ~5:4) so the field looks exactly like the reference until real photos arrive. About 92% of the area is covered, as on the reference.
 
 Photo shapes are read before the layout is built (`new Image()`, once the section is within about a screen of the viewport).
-- *Alternative:* hand-placed coordinates per photo. These break whenever the count changes. Rejected.
-- *Alternative:* random at load time. The field would look different on every visit, and layout bugs would be hard to reproduce. Rejected.
+- *Alternative:* a computer-packed scatter (the third version). It adapts to any shape, but its gaps and overlaps looked accidental. Rejected.
+- *Alternative:* cropping photos to their slots (`object-fit: cover`). It would match the reference exactly for any photo, but it cuts off edges, including any Polaroid-style borders Rae adds. Rejected; the README says which shape each photo number fits best.
 
 ### 3. Endless repeat by wrapping each instance over a period
-- **The tile** repeats `tileW` across and `tileH` down. Each repeat across is also shifted down by `COPY_SHIFT` (half the tile height), so a photo's twin is never level with it. This matters on wide screens, where 20 photos must repeat across the width. The packing in Decision 2 treats these shifted repeats as neighbours, so the seams are packed like everywhere else.
+- **The tile** repeats `tileW` across and `tileH` down. Each repeat across is also shifted down by one block, so a photo's twin is never level with it, while every block still has the same neighbours as on the reference (so the seams between blocks are the reference's own).
 - **Copy count:** `copies = ceil((sectionSize + 2 × margin) / span)` each way, at least 1, where the margin is half the largest photo plus `WRAP_PAD` (0.5u).
 - **Accessibility:** copies beyond the first are `aria-hidden`, with empty `alt`.
 
@@ -53,7 +55,7 @@ The page can't tell a vertical drag of the field from a page scroll, so on the s
 - *Alternative:* `touch-action: pan-y` (vertical swipes scroll the page, sideways ones move the field). It never traps, but it loses vertical dragging on phones. Rae declined it.
 
 ### 5. Photo size scales with the screen
-`u = clamp(U_MIN, sqrt(sectionWidth × sectionHeight) / DENSITY, U_MAX)` with `U_MIN = 150`, `U_MAX = 300` and `DENSITY = 3.3` px. That is 150px on a phone (about 2½ photos across, like the reference's ~170px photos at 400 × 800) and 300px on a large desktop. The drag offset is stored in units of `u`. On resize or rotation, `u`, the tile and the copies are recomputed, and image elements are only rebuilt if the copy count changes. The field keeps its relative position.
+`u = clamp(U_MIN, sqrt(sectionWidth × sectionHeight) / DENSITY, U_MAX)` with `U_MIN = 150`, `U_MAX = 300` and `DENSITY = 2.7`. On a typical phone (375px wide, section 500px tall) that is about 160px, which draws the block almost exactly as wide as the screen, as on the reference; a large desktop gets 300px (the block at 1.75× size, repeated sideways). The drag offset is stored in units of `u`. On resize or rotation, `u`, the tile and the copies are recomputed, and image elements are only rebuilt if the copy count changes. The field keeps its relative position.
 
 ### 6. Input
 - **Drag:** pointer down/move/up on the section moves the offset by the pointer delta, 1:1. `draggable="false"` on images, `user-select: none`, and `preventDefault` on `dragstart` stop image dragging and text selection. `cursor: grab` / `grabbing` show it can be dragged.
@@ -69,10 +71,10 @@ With `prefersReducedMotion()` from `video-scrub.js`, drag still works 1:1 (it is
 ### 8. Configuration and placeholders
 `config.photoField` is an explicit array of image paths (`./img/photo-field/01.jpg` … `20.jpg`). GitHub Pages can't list a folder, so the list lives in config. An empty or missing list leaves the section `hidden`, which is also its initial state in the markup until `photo-field.js` mounts. Without JS there is no blank 75% band. The section is unhidden as soon as `photo-field.js` starts, so it takes its space immediately and nothing below it jumps. A photo that fails to load is left out of the layout entirely, so it leaves no hole.
 
-Placeholders come from a new `scripts/gen-photo-field-placeholders.mjs`. It's a dependency-free Node script that calls ffmpeg (path from the `FFMPEG` environment variable, defaulting to `ffmpeg`). It writes 20 JPGs in Warm Muted palette gradients with a large centred number (`01`–`20`, using `drawtext` and a Windows system font), in a fixed mix of shapes: 8 portrait (4:5), 6 landscape (3:2) and 6 square. Each is about 800px on its long side and under about 40 KB. If this ffmpeg build lacks `drawtext`, the script writes the gradients without numbers and says so.
+Placeholders come from a new `scripts/gen-photo-field-placeholders.mjs`. It's a dependency-free Node script that calls ffmpeg (path from the `FFMPEG` environment variable, defaulting to `ffmpeg`). It writes 20 JPGs in Warm Muted palette gradients with a large centred number (`01`–`20`, using `drawtext` and a Windows system font), in the shapes of the block's slots, in slot order (8 tall 2:3, 9 portrait ~5:6, 3 landscape ~5:4). Each is about 800px on its long side and under about 40 KB. If this ffmpeg build lacks `drawtext`, the script writes the gradients without numbers and says so.
 
 ### 9. Files
-- `site/js/photo-field.js`: pure helpers (`mulberry32`, `layoutField`, `photoUnit`, `copiesNeeded`, `wrap`, `instancePosition`, `tilePosition`, `catchUp`) plus `initPhotoField({ photos, section, win })`, which returns `{ active, destroy }` like `initSwipe`.
+- `site/js/photo-field.js`: pure helpers (`mulberry32`, `blockSlots`, `layoutField`, `photoUnit`, `copiesNeeded`, `wrap`, `instancePosition`, `tilePosition`, `catchUp`) plus `initPhotoField({ photos, section, win })`, which returns `{ active, destroy }` like `initSwipe`.
 - `site/index.html`: `<section class="photo-field-shell" id="photo-field" hidden>` after `#swipe-video`, before `#gallery-slot`.
 - `site/css/base.css`: full-bleed shell (`width:100vw; margin-left:calc(50% - 50vw)`), `background: var(--bg)`, `overflow: hidden`, height rules, the `.photo-field-active` interaction rules, and focus outline.
 - `site/js/main.js`: `initPhotoField({ photos: config.photoField })`.
