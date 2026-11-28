@@ -106,7 +106,7 @@ function coverage(l, RW = 6, RH = 6, step = 0.04) {
 test('the field is densely filled, and overlapped photos stay mostly visible', () => {
   for (const seed of [20270403, 1, 2, 3, 4]) {
     const { covered, minVisible } = coverage(layoutField(SHAPES, seed));
-    assert.ok(covered > 0.8 && covered < 0.97, `seed ${seed}: ${Math.round(covered * 100)}% covered`);
+    assert.ok(covered > 0.8 && covered < 0.93, `seed ${seed}: ${Math.round(covered * 100)}% covered`);
     assert.ok(minVisible >= 0.6, `seed ${seed}: a photo is only ${Math.round(minVisible * 100)}% visible`);
   }
 });

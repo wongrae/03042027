@@ -35,6 +35,9 @@ export const SIZE_MAX = 1.25;
 // height) along each edge may sit under or over a neighbour. Larger = more overlap
 // and fewer gaps; the unit tests check every photo stays at least 60% visible.
 export const EDGE = 0.05;
+// After packing, the layout is spread out by this factor, opening gaps between
+// photos (1 = tightly packed). Higher = more background showing, less overlap.
+export const SPREAD = 1.08;
 // Shape of the repeating tile (height / width): taller than wide, like a phone.
 const TILE_SHAPE = 1.45;
 // Stacking order: smaller photos mostly sit on top of bigger ones (so a big photo
@@ -161,6 +164,10 @@ export function layoutField(aspects, seed = SEED) {
     tileH *= GROW;
     items.forEach((it) => { it.x *= GROW; it.y *= GROW; });
   }
+  // Spread the packed photos apart a little, so some background shows between them.
+  tileW *= SPREAD;
+  tileH *= SPREAD;
+  items.forEach((it) => { it.x *= SPREAD; it.y *= SPREAD; });
   // Stacking: bigger photos lower, smaller ones on top, mixed up a little.
   items
     .map((it) => ({ it, k: it.w * it.h * (1 - Z_MIX + rand() * 2 * Z_MIX) }))

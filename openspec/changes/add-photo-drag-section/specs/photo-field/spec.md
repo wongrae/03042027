@@ -25,7 +25,7 @@ The section SHALL show the configured photos at varied sizes, scattered freely o
 - **THEN** only photos of different sizes on the page background are visible, in no grid or column pattern, each shown uncropped in its original proportions
 
 ### Requirement: Densely filled, with overlapped photos still visible
-The photos SHALL cover most of the section (roughly 80–95% of its area), leaving only narrow strips of background and no large empty areas. Photos MAY overlap at their edges, but every photo SHALL remain at least 60% visible, and a phone screen SHALL NOT show the same photo twice.
+The photos SHALL cover most of the section (roughly 80–92% of its area), leaving narrow gaps of background between photos but no large empty areas. Photos MAY overlap at their edges, but every photo SHALL remain at least 60% visible, and a phone screen SHALL NOT show the same photo twice.
 
 #### Scenario: Phone screen
 - **WHEN** a visitor on a phone looks at the section at any drag position
