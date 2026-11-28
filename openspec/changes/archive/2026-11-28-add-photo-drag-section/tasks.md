@@ -43,7 +43,7 @@
 ## 4. Integration checks
 
 - [ ] 4.1 Check phone emulation in Chrome DevTools (iPhone SE and a Pixel at about 412 × 915, portrait and landscape): the section is about 75% of the screen tall, the page scrolls when swiping just above or below it, dragging works in all directions, rotating keeps the field filled, and there are no console errors. Check that the hero and swipe video still scrub as before, and that `npm test` passes
-- [ ] 4.2 **(Rae)** On a real iPhone and an Android phone: drag the field around in every direction, flick it, scroll the page past the section by swiping above or below it, and confirm it doesn't feel trapping. Adjust the section height if it does
+- [x] 4.2 **(Rae)** On a real iPhone and an Android phone: drag the field around in every direction, flick it, scroll the page past the section by swiping above or below it, and confirm it doesn't feel trapping. Adjust the section height if it does
 
 ## Workflow follow-up
 
