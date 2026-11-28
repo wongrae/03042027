@@ -9,6 +9,7 @@ import { setupMarquee } from './marquee.js';
 import { initHero } from './hero.js';
 import { initSwipe } from './swipe.js';
 import { initPhotoField } from './photo-field.js';
+import { photoLayout } from './photo-layout.js';
 import { initReveal } from './reveal.js';
 
 const pillSlot = document.getElementById('pill-slot');
@@ -60,7 +61,8 @@ initHero({ src: config.heroVideo });
 // Swipe-scrubbed video below the info section (all phases; the still stays for reduced-motion visitors).
 initSwipe({ src: config.swipeVideo });
 // Drag-around photo field below the swipe video (all phases; stays hidden if config.photoField is empty).
-initPhotoField({ photos: config.photoField });
+// Uses the hand-made layout from the layout editor when there is one.
+initPhotoField({ photos: config.photoField, layout: photoLayout });
 initReveal();
 
 (async () => {

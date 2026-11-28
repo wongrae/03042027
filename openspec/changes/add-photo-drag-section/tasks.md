@@ -34,6 +34,12 @@
 - [x] 3.4 Add wheel and keyboard input: only sideways-dominant wheel events move the field (`preventDefault`), vertical wheel scrolls the page, arrow keys move by `0.5u` with `preventDefault`. Reduced motion means no glide and a depth of 1. Add tests: reduced motion turns off glide and depth, and the arrow-key step direction is right. Verify in desktop Chrome that a mouse wheel over the section scrolls the page, a trackpad sideways swipe moves the field without going back in history, Tab plus the arrows work, and the DevTools reduced-motion emulation behaves as in the spec
 - [x] 3.5 Document the section in `README.md`: what it does, how to swap photos (same file name, resize to about 1200px on the long side first, Polaroid-style images are fine), how to add or remove photos in `config.photoField`, how to rerun the placeholder script, and the tuning constants (`SEED`, `DENSITY`, `U_MIN`/`U_MAX`, `MOMENTUM_MS`, section height). Verify the documented placeholder command runs as written
 
+## 3b. Hand-made layout
+
+- [x] 3.6 Add `site/js/photo-layout.js` (`photoLayout = null`), `handLayout()`/`handLayoutPhotos()` in `photo-field.js`, and the `layout` option of `initPhotoField` (main.js passes `photoLayout`). Tests: positions, own shapes, wrapping into the frame, repeats, failed photos, fallback to automatic
+- [x] 3.7 Add the editor (`tools/photo-layout-editor/`), its routes in `scripts/serve.mjs` with a loopback-only save, and `scripts/photo-layout-file.mjs` (`cleanLayout`, `layoutModule`) with tests. Verify in Chrome: move, resize, undo, save, site preview shows the layout, switch back to automatic
+- [x] 3.8 Document the editor in `README.md`
+
 ## 4. Integration checks
 
 - [ ] 4.1 Check phone emulation in Chrome DevTools (iPhone SE and a Pixel at about 412 × 915, portrait and landscape): the section is about 75% of the screen tall, the page scrolls when swiping just above or below it, dragging works in all directions, rotating keeps the field filled, and there are no console errors. Check that the hero and swipe video still scrub as before, and that `npm test` passes

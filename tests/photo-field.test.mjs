@@ -454,3 +454,28 @@ test('vertical wheel is left to the page; sideways wheel and arrow keys move the
   assert.ok(r.offset().y > 0, 'down arrow moves the field down');
   assert.equal(page.section.dispatch('keydown', { key: 'Tab' }).prevented, undefined);
 });
+
+test('with a hand-made layout, the field shows exactly the photos placed in it', async () => {
+  const page = fakePage();
+  const layout = {
+    width: 400,
+    height: 900,
+    shift: 450,
+    photos: [
+      { src: './img/photo-field/03.jpg', x: 100, y: 120, w: 160, z: 1 },
+      { src: './img/photo-field/05.jpg', x: 300, y: 400, w: 200, z: 2 },
+      { src: './img/photo-field/03.jpg', x: 250, y: 700, w: 120, z: 3 },
+    ],
+  };
+  const r = initPhotoField({ photos: PHOTOS, layout, section: page.section, win: page.win });
+  await r.ready;
+  const imgs = page.photos();
+  assert.deepEqual([...new Set(imgs.map((i) => i.src))].sort(), ['./img/photo-field/03.jpg', './img/photo-field/05.jpg']);
+  assert.equal(imgs.length % 3, 0, 'whole copies of the 3 placed photos');
+  assert.equal(imgs.filter((img) => img.attrs['aria-hidden'] !== 'true').length, 2, 'each photo announced once');
+  // an empty hand layout falls back to the automatic arrangement of all the photos
+  const page2 = fakePage();
+  const r2 = initPhotoField({ photos: PHOTOS, layout: { width: 400, height: 800, photos: [] }, section: page2.section, win: page2.win });
+  await r2.ready;
+  assert.equal(new Set(page2.photos().map((i) => i.src)).size, 20);
+});

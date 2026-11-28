@@ -14,6 +14,7 @@ The plan lives in `openspec/changes/initial-site-build/` (proposal, specs, desig
 | `tests/` | Unit tests (`node --test`) |
 | `scripts/serve.mjs` | Dependency-free local preview server |
 | `scripts/mock-backend.mjs` | Local stand-in for the Google backend (runs the real `Code.gs` on a fake sheet) |
+| `tools/photo-layout-editor/` | Local-only editor for arranging the photo field by hand (not published) |
 | `design-reference/` | Read-only snapshot of the approved mockup — see [`design-reference/README.md`](design-reference/README.md) |
 
 ## Run locally
@@ -97,6 +98,7 @@ The photos are currently **placeholders**: `site/img/photo-field/01.jpg` … `20
 
   Other shapes work too, but then gaps and overlaps shift a little from the original.
 - **More or fewer photos:** add or remove lines in `photoField` (e.g. add `'./img/photo-field/21.jpg'`). Every 11 photos fill one copy of the arrangement, and spare slots show a second copy of another photo (so 22 photos fill two copies exactly). An empty list hides the section.
+- **Arrange the photos by hand:** run `npm run serve` and open **http://localhost:8080/__layout-editor/** on this computer. It starts from the current arrangement. Drag photos to move them, drag the round handle to resize, and use the buttons (or `[` `]`) to bring a photo forward or send it back. Click a photo in the list on the left to add it, and press Delete to remove the selected one. The dashed box is one copy of the pattern, which repeats in every direction; the faded photos around it show how its edges join up, and the dark-edged box shows what a phone screen sees (drag its label to move it). The *Check* panel shows how much of the area is covered and warns if a photo is mostly hidden. **Save to site** writes `site/js/photo-layout.js`; open the site preview to see it, then commit and push to publish. **Switch site back to automatic** returns to the afterdusk arrangement. While a hand layout is saved, the site shows exactly the photos placed in it, so add new photos in the editor too (after adding them to `photoField`).
 - **Remake the placeholders** (overwrites files of the same name, so move real photos out first):
 
   ```bash

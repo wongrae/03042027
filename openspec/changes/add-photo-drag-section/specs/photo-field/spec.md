@@ -114,6 +114,21 @@ For visitors with `prefers-reduced-motion: reduce`, the field SHALL still follow
 - **WHEN** a visitor with reduced motion enabled flicks the field
 - **THEN** it stops as soon as they let go, and all photos move together with no lag
 
+### Requirement: Hand-made layout
+Rae SHALL be able to arrange the photos by hand in a local, unpublished visual editor, and save the result to the site's settings. The photo field SHALL then show that arrangement, repeating and draggable as before, with each photo uncropped, until she switches back to the automatic arrangement.
+
+#### Scenario: Saving a hand-made layout
+- **WHEN** Rae moves photos in the editor, saves, and opens the site preview
+- **THEN** the photo field shows them where she put them
+
+#### Scenario: Editing
+- **WHEN** Rae opens the editor
+- **THEN** she can add, move, resize, duplicate, remove and re-layer photos in one repeating frame, and sees how its edges join its repeats
+
+#### Scenario: Saving from another device
+- **WHEN** a save request reaches the preview server from any address other than this computer
+- **THEN** it is refused and nothing is written
+
 ### Requirement: Replaceable placeholder photos
 Until Rae supplies real photos, the section SHALL use about 20 numbered placeholder images in the shapes of the arrangement's slots. Replacing a placeholder file with a photo of the same name SHALL show that photo with no code change, whatever its shape. Changing the number of photos SHALL need only an edit to the site's settings.
 

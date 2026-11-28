@@ -156,6 +156,54 @@ export function layoutField(aspects, seed = SEED) {
   };
 }
 
+/** The photo files a hand-made layout uses, each once, in the order first placed. */
+export function handLayoutPhotos(hand) {
+  const photos = Array.isArray(hand?.photos) ? hand.photos : [];
+  return [...new Set(photos.map((p) => p?.src).filter((s) => typeof s === 'string' && s))];
+}
+
+/**
+ * A layout arranged by hand in the layout editor (site/js/photo-layout.js).
+ * `hand` is { width, height, shift, photos: [{ src, x, y, w, z }] } in px of a
+ * phone-width frame (x, y = a photo's centre, w = its width; its height comes from
+ * its own shape). `aspectOf(src)` gives a photo's height / width, or NaN if it
+ * failed to load (it is then left out). Same shape of result as layoutField.
+ */
+export function handLayout(hand, aspectOf, seed = SEED) {
+  const empty = { tileW: 0, tileH: 0, shift: 0, blocks: 0, items: [] };
+  const width = Number(hand?.width);
+  const height = Number(hand?.height);
+  if (!(width > 0) || !(height > 0) || !Array.isArray(hand.photos)) return empty;
+  const k = BLOCK.unit;
+  const srcs = handLayoutPhotos(hand);
+  const placed = hand.photos
+    .map((p, order) => ({ p, order, aspect: aspectOf(p?.src) }))
+    .filter(({ p, aspect }) => p && srcs.includes(p.src) && Number(p.w) > 0
+      && Number.isFinite(Number(p.x)) && Number.isFinite(Number(p.y)) && aspect > 0 && Number.isFinite(aspect));
+  const shift = Number(hand.shift) || 0;
+  const wrapTo = (v, per) => ((v % per) + per) % per;
+  const rand = mulberry32(seed);
+  const seen = new Set();
+  // Stacking: by layer, then by list order (later on top).
+  const rank = placed.slice().sort((a, b) => (Number(a.p.z) || 0) - (Number(b.p.z) || 0) || a.order - b.order);
+  const items = placed.map(({ p, aspect }, i) => {
+    // Bring the centre into the frame, moving across whole frames (and their shift).
+    const turns = Math.floor(Number(p.x) / width);
+    const x = Number(p.x) - turns * width;
+    const y = wrapTo(Number(p.y) - turns * shift, height);
+    const w = Number(p.w) / k;
+    const repeat = seen.has(p.src);
+    seen.add(p.src);
+    return {
+      index: srcs.indexOf(p.src), slot: i, block: 0,
+      x: x / k, y: y / k, w, h: w * aspect,
+      z: 0, lag: rand() * LAG_MAX_MS, key: i, repeat,
+    };
+  });
+  rank.forEach((r, z) => { items[placed.indexOf(r)].z = z + 1; });
+  return { tileW: width / k, tileH: height / k, shift: wrapTo(shift, height) / k, blocks: 1, items };
+}
+
 /** Photo unit u in px for a section of the given size. */
 export function photoUnit(width, height) {
   const area = width * height;
@@ -257,12 +305,16 @@ function whenNear(section, win) {
 }
 
 /**
- * @param {{ photos?: string[]|null, section?: HTMLElement|null, win?: Window }} options
+ * `layout` is an optional hand-made layout (see handLayout); when it places any
+ * photos, the field shows exactly those, arranged by hand, instead of `photos`
+ * in the automatic arrangement.
+ * @param {{ photos?: string[]|null, layout?: object|null, section?: HTMLElement|null, win?: Window }} options
  * @returns {{ active: boolean, ready: Promise<void>, offset: () => {x:number, y:number}, destroy: () => void }}
  */
-export function initPhotoField({ photos, section = globalThis.document?.getElementById('photo-field'), win = globalThis.window } = {}) {
+export function initPhotoField({ photos, layout: hand = null, section = globalThis.document?.getElementById('photo-field'), win = globalThis.window } = {}) {
   const inactive = { active: false, ready: Promise.resolve(), offset: () => ({ x: 0, y: 0 }), destroy() {} };
-  const all = Array.isArray(photos) ? photos.filter(Boolean) : [];
+  const byHand = handLayoutPhotos(hand).length > 0;
+  const all = byHand ? handLayoutPhotos(hand) : (Array.isArray(photos) ? photos.filter(Boolean) : []);
   if (!all.length || !section || !win) return inactive;
 
   const doc = section.ownerDocument;
@@ -438,10 +490,19 @@ export function initPhotoField({ photos, section = globalThis.document?.getEleme
     .then(() => (destroyed ? [] : loadAspects(all, win)))
     .then((aspects) => {
       if (destroyed) return;
-      // A photo that fails to load is left out, so it leaves no hole.
+      // A photo that fails to load is left out (in the automatic layout, with no hole).
       const ok = all.map((src, i) => ({ src, a: aspects[i] })).filter((p) => Number.isFinite(p.a));
       list = ok.map((p) => p.src);
-      layout = layoutField(ok.map((p) => p.a));
+      if (byHand) {
+        const shapeOf = new Map(ok.map((p) => [p.src, p.a]));
+        const placed = handLayout(hand, (src) => shapeOf.get(src) ?? NaN);
+        // index refers to the hand layout's own photo list; point it at `list` instead
+        const handSrcs = handLayoutPhotos(hand);
+        placed.items.forEach((it) => { it.index = list.indexOf(handSrcs[it.index]); });
+        layout = placed;
+      } else {
+        layout = layoutField(ok.map((p) => p.a));
+      }
       shown = layout.items.map(() => ({ x: target.x, y: target.y }));
       measure();
     });

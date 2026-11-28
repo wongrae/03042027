@@ -73,11 +73,18 @@ With `prefersReducedMotion()` from `video-scrub.js`, drag still works 1:1 (it is
 
 Placeholders come from a new `scripts/gen-photo-field-placeholders.mjs`. It's a dependency-free Node script that calls ffmpeg (path from the `FFMPEG` environment variable, defaulting to `ffmpeg`). It writes 20 JPGs in Warm Muted palette gradients with a large centred number (`01`–`20`, using `drawtext` and a Windows system font), in the shapes of the block's slots, in slot order (8 tall 2:3, 9 portrait ~5:6, 3 landscape ~5:4). Each is about 800px on its long side and under about 40 KB. If this ffmpeg build lacks `drawtext`, the script writes the gradients without numbers and says so.
 
-### 9. Files
+### 9. Hand-made layouts and the layout editor
+Rae asked to arrange the photos by hand. `site/js/photo-layout.js` exports `photoLayout`: `null` (use the automatic arrangement) or `{ width, height, shift, photos: [{ src, x, y, w, z }] }` in px of a phone-width frame (x, y = centre, w = width; height from the photo's own shape, so nothing is cropped). `handLayout()` turns it into the same shape of layout as `layoutField()`, so wrapping, depth and input are shared. While it places any photos, the field shows exactly those (a photo may be placed more than once; later copies are `aria-hidden`).
+
+The editor is `tools/photo-layout-editor/` (outside `site/`, so never published), served by `scripts/serve.mjs` at `/__layout-editor/`. It imports the site's own `config.js`, `photo-layout.js` and `photo-field.js`, starts from the saved or automatic layout, and shows the repeats around the frame, a movable phone-screen outline, coverage, and a warning for any photo under 40% visible. Save POSTs to `/__layout-editor/save`; the server accepts it only from the loopback address, checks it with `cleanLayout()` (`scripts/photo-layout-file.mjs`: numeric ranges, photo paths limited to `./img/…` image files), and writes the module with `layoutModule()`.
+- *Alternative:* editing numbers in `config.js` by hand. Rae chose the visual editor.
+
+### 10. Files
 - `site/js/photo-field.js`: pure helpers (`mulberry32`, `blockSlots`, `layoutField`, `photoUnit`, `copiesNeeded`, `wrap`, `instancePosition`, `tilePosition`, `catchUp`) plus `initPhotoField({ photos, section, win })`, which returns `{ active, destroy }` like `initSwipe`.
 - `site/index.html`: `<section class="photo-field-shell" id="photo-field" hidden>` after `#swipe-video`, before `#gallery-slot`.
 - `site/css/base.css`: full-bleed shell (`width:100vw; margin-left:calc(50% - 50vw)`), `background: var(--bg)`, `overflow: hidden`, height rules, the `.photo-field-active` interaction rules, and focus outline.
-- `site/js/main.js`: `initPhotoField({ photos: config.photoField })`.
+- `site/js/main.js`: `initPhotoField({ photos: config.photoField, layout: photoLayout })`.
+- `site/js/photo-layout.js`, `tools/photo-layout-editor/`, `scripts/photo-layout-file.mjs` and the editor routes in `scripts/serve.mjs` (Decision 9).
 
 ## Risks / Trade-offs
 
