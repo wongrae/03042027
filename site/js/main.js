@@ -8,6 +8,7 @@ import { pageNowMs } from './page-now.js';
 import { setupMarquee } from './marquee.js';
 import { initHero } from './hero.js';
 import { initSwipe } from './swipe.js';
+import { initPhotoField } from './photo-field.js';
 import { initReveal } from './reveal.js';
 
 const pillSlot = document.getElementById('pill-slot');
@@ -58,6 +59,8 @@ function tick() {
 initHero({ src: config.heroVideo });
 // Swipe-scrubbed video below the info section (all phases; the still stays for reduced-motion visitors).
 initSwipe({ src: config.swipeVideo });
+// Drag-around photo field below the swipe video (all phases; stays hidden if config.photoField is empty).
+initPhotoField({ photos: config.photoField });
 initReveal();
 
 (async () => {

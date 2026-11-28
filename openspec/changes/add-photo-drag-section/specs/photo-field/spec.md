@@ -1,0 +1,119 @@
+# Spec Delta
+
+## Purpose
+
+A landing-page section below the swipe video that shows a scattered wall of photos. Visitors drag it around in any direction, and it repeats endlessly.
+
+## ADDED Requirements
+
+### Requirement: Section placement and visibility
+The landing page SHALL show the photo field section directly below the swipe video section, in every site phase. In Phase 3 the gallery teaser SHALL render below it.
+
+#### Scenario: Any phase
+- **WHEN** a visitor opens the landing page in Phase 1, 2 or 3
+- **THEN** the photo field appears directly below the swipe video section
+
+#### Scenario: Wedding day
+- **WHEN** a visitor opens the landing page in Phase 3
+- **THEN** the gallery teaser appears directly below the photo field
+
+### Requirement: Scattered photos with no overlay
+The section SHALL show the configured photos scattered loosely at varied sizes over the site's page background colour. Each photo SHALL keep its own aspect ratio (no cropping) and have no added frame, border, caption, heading or wordmark.
+
+#### Scenario: Viewing the section
+- **WHEN** the section is on screen
+- **THEN** only photos of different sizes on the page background are visible, each shown uncropped in its original proportions
+
+### Requirement: Section height leaves room to scroll
+The section SHALL be full-bleed and shorter than the screen (about three quarters of the visible screen height), so that on any screen part of the page above or below it is always visible while it is centred.
+
+#### Scenario: Phone in portrait
+- **WHEN** a visitor on a phone scrolls the section to the middle of the screen
+- **THEN** some page content or background is visible above and below it, and swiping there scrolls the page
+
+### Requirement: Drag moves the field in any direction
+Dragging over the section with a finger or a mouse SHALL move the photos with the pointer, horizontally, vertically or diagonally. While dragging, the page SHALL NOT scroll.
+
+#### Scenario: Diagonal drag
+- **WHEN** a visitor drags up and to the left across the section
+- **THEN** the photos move up and to the left with the finger or mouse, and the page does not scroll
+
+#### Scenario: Dragging starts on a photo
+- **WHEN** a desktop visitor presses on a photo and drags
+- **THEN** the field moves, and the browser does not start dragging the image file or selecting text
+
+### Requirement: The field never runs out
+The photo layout SHALL repeat in both directions, so no amount of dragging in any direction reaches an edge or an empty area. Photos that leave one side SHALL reappear from the opposite side with no visible jump.
+
+#### Scenario: Long drag one way
+- **WHEN** a visitor keeps dragging left for many screen-widths
+- **THEN** photos keep arriving from the right with no gap, end or visible snap
+
+### Requirement: Momentum after a flick
+When a drag is released while still moving, the field SHALL keep moving in the same direction and slow to a stop, travelling further after a faster flick. A drag that stopped before release SHALL stay where it is. Touching the field while it is still gliding SHALL stop it.
+
+#### Scenario: Flick
+- **WHEN** a visitor flicks the field and lifts their finger while it is moving
+- **THEN** the photos keep gliding in that direction and ease to a stop
+
+#### Scenario: Stopping before letting go
+- **WHEN** a visitor stops their finger and then lifts it
+- **THEN** the field stays where it is
+
+#### Scenario: Catching a gliding field
+- **WHEN** the field is still gliding and the visitor touches it again
+- **THEN** it stops where it is
+
+### Requirement: Subtle depth effect
+Photos SHALL move by slightly different amounts for the same drag, so the field feels layered. The difference SHALL stay small enough that the scattered arrangement stays readable and photos do not visibly swap positions during a normal drag.
+
+#### Scenario: Dragging the field
+- **WHEN** a visitor drags the field one screen-width
+- **THEN** all photos move in the drag direction, some slightly more than others
+
+### Requirement: Every screen size
+The section SHALL work on phones, tablets and desktops in any orientation. Photo sizes SHALL scale with the screen so that a phone and a desktop show a comparably dense field, and resizing or rotating the screen SHALL keep the field filled with no gaps.
+
+#### Scenario: Rotating a phone
+- **WHEN** a visitor rotates their phone while the section is on screen
+- **THEN** the field still fills the section with photos and remains draggable
+
+#### Scenario: Wide desktop
+- **WHEN** a visitor views the section in a 1920px-wide window
+- **THEN** the section is filled with photos with no empty bands, and mouse dragging works in every direction
+
+### Requirement: Page scrolling outside a drag
+Vertical mouse-wheel scrolling over the section SHALL scroll the page and SHALL NOT move the field. A sideways trackpad swipe over the section SHALL move the field sideways without triggering browser back/forward navigation.
+
+#### Scenario: Mouse wheel over the section
+- **WHEN** a desktop visitor scrolls the mouse wheel down with the pointer over the section
+- **THEN** the page scrolls past the section and the photos do not move relative to it
+
+#### Scenario: Trackpad sideways swipe
+- **WHEN** a visitor two-finger swipes left on a trackpad over the section
+- **THEN** the field moves left and the browser does not navigate
+
+### Requirement: Keyboard access
+The section SHALL be keyboard-focusable with an accessible label explaining how to move it, and the arrow keys SHALL move the field in the matching direction while it has focus.
+
+#### Scenario: Arrow key
+- **WHEN** the section has focus and the visitor presses the Down arrow
+- **THEN** the field moves and the page does not scroll
+
+### Requirement: Reduced motion
+For visitors with `prefers-reduced-motion: reduce`, the field SHALL still follow a drag directly but SHALL NOT glide after release and SHALL NOT use the depth effect.
+
+#### Scenario: Reduced motion flick
+- **WHEN** a visitor with reduced motion enabled flicks the field
+- **THEN** it stops as soon as they let go, and all photos move together by the same amount
+
+### Requirement: Replaceable placeholder photos
+Until Rae supplies real photos, the section SHALL use about 20 numbered placeholder images in a mix of portrait, landscape and square shapes. Replacing a placeholder file with a photo of the same name SHALL show that photo with no code change, whatever its shape. Changing the number of photos SHALL need only an edit to the site's settings.
+
+#### Scenario: Swapping a photo
+- **WHEN** Rae replaces placeholder `07` with a landscape photo of the same file name and redeploys
+- **THEN** that photo appears in the field in its landscape proportions
+
+#### Scenario: A photo fails to load
+- **WHEN** one configured photo is missing or fails to load
+- **THEN** the field still works and shows the remaining photos without a broken-image icon

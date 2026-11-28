@@ -21,4 +21,16 @@ export const config = {
   // Path to the swipe-scrubbed video below the info section. PLACEHOLDER clip
   // until the real one is supplied; null keeps the still image (img/swipe-still.jpg).
   swipeVideo: './video/swipe.mp4',
+
+  // Photos for the drag-around photo field below the swipe video. PLACEHOLDERS:
+  // replace a file in site/img/photo-field/ with a real photo of the same name
+  // (any shape; resize to ~1200px on the long side first). To show more or fewer
+  // photos, add or remove lines here. An empty list hides the section.
+  photoField: [
+    './img/photo-field/01.jpg', './img/photo-field/02.jpg', './img/photo-field/03.jpg', './img/photo-field/04.jpg',
+    './img/photo-field/05.jpg', './img/photo-field/06.jpg', './img/photo-field/07.jpg', './img/photo-field/08.jpg',
+    './img/photo-field/09.jpg', './img/photo-field/10.jpg', './img/photo-field/11.jpg', './img/photo-field/12.jpg',
+    './img/photo-field/13.jpg', './img/photo-field/14.jpg', './img/photo-field/15.jpg', './img/photo-field/16.jpg',
+    './img/photo-field/17.jpg', './img/photo-field/18.jpg', './img/photo-field/19.jpg', './img/photo-field/20.jpg',
+  ],
 };

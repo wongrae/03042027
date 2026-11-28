@@ -84,6 +84,22 @@ ffmpeg -i site/video/swipe.mp4 -frames:v 1 -q:v 4 site/img/swipe-still.jpg
 
 `-crf 22` is gentler than the hero's 28: detailed landscapes break up into blotches at 28. For a large source (1080p or more), add `-vf "scale=1280:-2"` after `-an` and check the file is under ~10 MB. The section is as tall as the clip's shape: full width, and never taller than the screen. How far you swipe to get through the whole clip is set by `SWIPE_WIDTHS_PER_CLIP` in `site/js/swipe.js` (default 2.25 section-widths; lower is faster). Reduced-motion visitors, and browsers where the video fails to load, see the still.
 
+## Photo field (below the swipe video)
+
+The section under the swipe video is a scattered wall of photos that guests drag around in any direction, with a finger or a mouse. It repeats endlessly, keeps gliding briefly after a flick, and photos move at slightly different speeds for a sense of depth. It is about three quarters of the screen tall, so guests can always scroll the page by swiping just above or below it. A mouse wheel scrolls the page as usual. A sideways trackpad swipe, or the arrow keys (after clicking or tabbing to it), also move the photos.
+
+The photos are currently **placeholders**: `site/img/photo-field/01.jpg` … `20.jpg`, listed in `photoField` in `site/js/config.js`.
+
+- **Swap a photo:** replace a file with a real photo of the **same name** (e.g. save it as `site/img/photo-field/07.jpg`). Any shape works (portrait, landscape, square), and it is shown uncropped, so a photo with its own Polaroid-style border is fine. Resize to about **1200px on the long side** and save as JPEG first. Phone photos straight off the camera are several MB each.
+- **More or fewer photos:** add or remove lines in `photoField` (e.g. add `'./img/photo-field/21.jpg'`). The layout re-arranges itself for the new count. An empty list hides the section.
+- **Remake the placeholders** (overwrites files of the same name, so move real photos out first):
+
+  ```bash
+  FFMPEG="C:/Users/WongR/ffmpeg-portable/ffmpeg-9.0.2-essentials_build/bin/ffmpeg.exe" node scripts/gen-photo-field-placeholders.mjs
+  ```
+
+Tuning, in `site/js/photo-field.js`: `SEED` (change it to get a different arrangement), `DENSITY`, `U_MIN` and `U_MAX` (photo size: a lower `DENSITY` means bigger photos), `CELL` (spacing between photos), `DEPTH_SPREAD` (strength of the depth effect) and `MOMENTUM_MS` (how far a flick glides). The section height (`75svh`) is in `.photo-field-shell` in `site/css/base.css`. Reduced-motion visitors can still drag, but get no glide or depth effect.
+
 ## Deploying (GitHub Pages)
 
 `.github/workflows/pages.yml` runs the tests and publishes `site/` on every push to `main`. One-time setup: create a **public** GitHub repository, push this project to it, then in the repo go to **Settings → Pages → Source: GitHub Actions**. The site appears at `https://<your-username>.github.io/<repo-name>/`. All links in the site are relative, so it works the same under a custom domain.

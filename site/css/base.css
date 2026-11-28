@@ -83,6 +83,15 @@ div.float-pill{cursor:default;}
 .swipe-active.dragging{cursor:grabbing;}
 .swipe-active:focus-visible{outline:2px solid var(--clay-dark); outline-offset:-4px;}
 
+/* ---- photo field: full bleed, ~3/4 of the screen tall so the page above/below stays swipeable ---- */
+.photo-field-shell{display:block; width:100vw; margin-left:calc(50% - 50vw); position:relative; overflow:hidden; background:var(--bg); height:75vh; height:75svh; min-height:280px;}
+.photo-field-layer{position:absolute; inset:0;}
+.photo-field-photo{position:absolute; left:0; top:0; height:auto; display:block; will-change:transform; pointer-events:none; user-select:none; -webkit-user-select:none;}
+/* Only once photo-field.js is running: every drag on the section moves the photos. */
+.photo-field-active{touch-action:none; overscroll-behavior:contain; cursor:grab; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;}
+.photo-field-active.dragging{cursor:grabbing;}
+.photo-field-active:focus-visible{outline:2px solid var(--clay-dark); outline-offset:-4px;}
+
 /* ---- responsive sizing (desktop defaults, phone overrides below) ---- */
 .hero-shell{min-height:560px;}
 .couple-name{font-size:72px;}
